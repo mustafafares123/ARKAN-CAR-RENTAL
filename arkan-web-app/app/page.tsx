@@ -126,12 +126,28 @@ export default function Home() {
     const signed=await Promise.all((data||[]).map(async(row:any)=>({...row,media_urls:await Promise.all((row.media_paths||[]).map(async(path:string)=>{const {data}=await client!.storage.from("arkan-private").createSignedUrl(path,3600);return data?.signedUrl||"";}))})));
     setRows(old=>({...old,inspections:signed}));setNotice(ar?"تم حفظ فحص السيارة ومرفقاته سحابياً.":"Inspection and evidence saved to cloud.");
    }catch(err:any){setNotice((ar?"فشل حفظ الفحص: ":"Inspection save failed: ")+(err?.message||""));}finally{setLoading(false);}
+  }else if(client&&companyId&&["bookings","contracts","cash","maintenance","trackers","fines"].includes(section)){
+   setLoading(true);try{
+    const recordData={...form};
+    const userId=(await client.auth.getUser()).data.user?.id||null;
+    if(editingId){
+     const {error}=await client.from("arkan_records").update({record_data:recordData,updated_at:new Date().toISOString()}).eq("id",editingId).eq("company_id",companyId).eq("section",section);
+     if(error)throw error;
+     setRows(old=>({...old,[section]:(old[section]||[]).map(r=>r.id===editingId?{...recordData,id:editingId}:r)}));
+    }else{
+     const {data,error}=await client.from("arkan_records").insert({company_id:companyId,section,record_data:recordData,created_by:userId}).select("id,record_data,created_at").single();
+     if(error)throw error;
+     setRows(old=>({...old,[section]:[{...data.record_data,id:data.id,created_at:data.created_at},...(old[section]||[])]}));
+    }
+    setNotice(ar?"تم حفظ السجل ومزامنته مع السحابة.":"Record saved and synchronized to cloud.");
+   }catch(err:any){setNotice((ar?"فشل الحفظ السحابي: ":"Cloud save failed: ")+(err?.message||""));}finally{setLoading(false);}
   }else{if(editingId)setRows(old=>({...old,[section]:(old[section]||[]).map(r=>r.id===editingId?{...r,...form}:r)}));else{const id=crypto.randomUUID();setRows(old=>({...old,[section]:[{id,...form},...(old[section]||[])]}));}setNotice(ar?"تم حفظ السجل محلياً":"Record saved locally");}
   setForm({});setEditingId(null);setShowForm(false);
  }
  function startEdit(r:Row){setEditingId(r.id);setForm(Object.fromEntries((FIELDS[section]||[]).map(k=>[k,k==="additional_phones"?(Array.isArray(r[k])?r[k].join(", "):String(r[k]??"")):String(r[k]??"")]).concat([["image_url",String(r.image_url??"")],["image_path",String(r.image_path??"")],["identity_front_path",String(r.identity_front_path??"")],["identity_back_path",String(r.identity_back_path??"")],["license_image_path",String(r.license_image_path??"")],["gallery_paths",JSON.stringify(r.gallery_paths||[])]])));setShowForm(true);}
  async function deleteRow(r:Row){const itemName=section==="cash"?(ar?"الحركة المالية":"cash transaction"):section==="maintenance"?(ar?"سجل الصيانة":"maintenance record"):section==="customers"?(ar?"ملف العميل":"customer record"):section==="cars"?(ar?"السيارة":"car"):(ar?"السجل":"record");if(!window.confirm(ar?`هل أنت متأكد من حذف ${itemName}؟ لا يمكن التراجع عن الحذف.`:`Are you sure you want to delete this ${itemName}? This cannot be undone.`))return;
   if((section==="cars"||section==="customers")&&client&&companyId){setLoading(true);try{const targetTable=section==="customers"?"customers":"cars";const {error}=await client.from(targetTable).delete().eq("id",r.id).eq("company_id",companyId);if(error)throw error;if(section==="cars"){const carFiles=[r.image_path,...(r.gallery_paths||[])].filter(Boolean);if(carFiles.length)await client.storage.from("arkan-private").remove(carFiles);setRows(old=>({...old,cars:(old.cars||[]).filter(x=>x.id!==r.id)}));setNotice(ar?"تم حذف السيارة من السحابة.":"Car deleted from cloud.");}else{const paths=[r.identity_front_path,r.identity_back_path,r.license_image_path].filter(Boolean);if(paths.length)await client.storage.from("arkan-private").remove(paths);setRows(old=>({...old,customers:(old.customers||[]).filter(x=>x.id!==r.id)}));setNotice(ar?"تم حذف ملف العميل من السحابة.":"Customer deleted from cloud.");}}catch(e:any){setNotice((ar?"تعذر الحذف: ":"Delete failed: ")+(e?.message||""));}finally{setLoading(false);}}
+  else if(client&&companyId&&["bookings","contracts","cash","maintenance","trackers","fines"].includes(section)){setLoading(true);try{const {error}=await client.from("arkan_records").delete().eq("id",r.id).eq("company_id",companyId).eq("section",section);if(error)throw error;setRows(old=>({...old,[section]:(old[section]||[]).filter(x=>x.id!==r.id)}));setNotice(ar?"تم حذف السجل من السحابة.":"Record deleted from cloud.");}catch(e:any){setNotice((ar?"تعذر الحذف: ":"Delete failed: ")+(e?.message||""));}finally{setLoading(false);}}
   else{setRows(old=>({...old,[section]:(old[section]||[]).filter(x=>x.id!==r.id)}));setNotice(ar?"تم حذف السجل محلياً":"Record deleted locally");}
  }
  function handleDocument(e:any,key:string){const file=e.target.files?.[0];if(!file)return;if(!["image/jpeg","image/png","image/webp","application/pdf"].includes(file.type)){setNotice(ar?"نوع الملف غير مدعوم.":"Unsupported file type.");return;}if(file.size>8*1024*1024){setNotice(ar?"الملف أكبر من 8 ميغابايت.":"File exceeds 8 MB.");return;}const reader=new FileReader();reader.onload=()=>setForm(old=>({...old,[key]:String(reader.result)}));reader.readAsDataURL(file);}
@@ -150,7 +166,9 @@ export default function Home() {
    const customersSigned=await Promise.all((customers||[]).map(async(c:any)=>{const signed:any={...c};for(const [field,path] of [["identity_front_url","identity_front_path"],["identity_back_url","identity_back_path"],["license_image_url","license_image_path"]])if(c[path]){const {data}=await sb.storage.from("arkan-private").createSignedUrl(c[path],3600);signed[field]=data?.signedUrl||"";}return signed;}));
    const {data:inspectionRows}=await sb.from("vehicle_inspections").select("*").eq("company_id",company).order("created_at",{ascending:false});
    const inspectionsSigned=await Promise.all((inspectionRows||[]).map(async(row:any)=>({...row,media_urls:await Promise.all((row.media_paths||[]).map(async(path:string)=>{const {data}=await sb.storage.from("arkan-private").createSignedUrl(path,3600);return data?.signedUrl||"";}))})));
-   setRows(old=>({...old,cars:mapped,customers:customersSigned,inspections:inspectionsSigned}));setNotice(ar?"تم الاتصال بقاعدة البيانات السحابية وتحميل السيارات.":"Connected to cloud database and loaded vehicles.");
+   const {data:records,error:recordsError}=await sb.from("arkan_records").select("id,section,record_data,created_at").eq("company_id",company).order("created_at",{ascending:false});if(recordsError)throw recordsError;
+   const synced:Record<string,Row[]>={bookings:[],contracts:[],cash:[],maintenance:[],trackers:[],fines:[]};for(const record of records||[])if(synced[record.section])synced[record.section].push({...record.record_data,id:record.id,created_at:record.created_at});
+   setRows(old=>({...old,cars:mapped,customers:customersSigned,inspections:inspectionsSigned,...synced}));setNotice(ar?"تم الاتصال بالسحابة ومزامنة السيارات والعملاء والحجوزات والعقود والصندوق والصيانة والتتبع والمخالفات والفحوصات.":"Cloud connected; vehicles, customers, bookings, contracts, cash, maintenance, GPS, fines and inspections synchronized.");
   }catch(e:any){setCompanyId(null);setNotice(ar?"تعذر إعداد السحابة. شغّل ملف supabase/cloud_cars.sql وتحقق من تسجيل الدخول. ":"Cloud setup failed. Run supabase/cloud_cars.sql and verify sign-in. "+(e?.message||""));}
   finally{setLoading(false);setSessionReady(true);}
  }
