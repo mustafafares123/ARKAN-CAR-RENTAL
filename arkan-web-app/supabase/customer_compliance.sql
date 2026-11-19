@@ -8,7 +8,12 @@ alter table public.customers
   add column if not exists identity_back_path text,
   add column if not exists license_image_path text;
 
--- Enforce eligibility and required identity images at database level too.
+-- Store any number of optional secondary phone numbers without replacing the primary phone.
+alter table public.customers
+  add column if not exists additional_phones text[] not null default '{}';
+
+-- Do not use time-dependent CHECK constraints here: a licence can expire simply
+-- because the calendar advances. Enforce eligibility at every booking/contract write.
 alter table public.customers
   drop constraint if exists customers_minimum_age_check,
   drop constraint if exists customers_license_tenure_check,
@@ -16,14 +21,81 @@ alter table public.customers
   drop constraint if exists customers_identity_images_check;
 
 alter table public.customers
-  add constraint customers_minimum_age_check
-  check (date_of_birth is not null and date_of_birth <= (current_date - interval '24 years')::date),
-  add constraint customers_license_tenure_check
-  check (license_issue_date is not null and license_issue_date < (current_date - interval '2 years')::date),
-  add constraint customers_license_validity_check
-  check (license_expiry_date is not null and license_expiry_date >= current_date and license_expiry_date > license_issue_date),
   add constraint customers_identity_images_check
   check (identity_front_path is not null and identity_back_path is not null);
+
+create or replace function public.assert_customer_eligible_for_rental(target_customer uuid, target_company uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare c public.customers%rowtype;
+begin
+  if target_customer is null then
+    raise exception 'A customer must be linked to this rental';
+  end if;
+
+  select * into c
+  from public.customers
+  where id = target_customer and company_id = target_company;
+
+  if c.id is null then
+    raise exception 'Customer was not found in this company';
+  end if;
+  if c.date_of_birth is null or c.date_of_birth > (current_date - interval '24 years')::date then
+    raise exception 'Rental rejected: customer must be at least 24 years old';
+  end if;
+  if c.license_issue_date is null or c.license_issue_date >= (current_date - interval '2 years')::date then
+    raise exception 'Rental rejected: driving licence must have been held for more than two full years';
+  end if;
+  if c.license_expiry_date is null or c.license_expiry_date < current_date
+     or c.license_expiry_date <= c.license_issue_date then
+    raise exception 'Rental rejected: driving licence is expired or invalid';
+  end if;
+  if c.identity_front_path is null or c.identity_back_path is null then
+    raise exception 'Rental rejected: both sides of the identity document are required';
+  end if;
+end;
+$$;
+
+create or replace function public.enforce_booking_customer_eligibility()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.assert_customer_eligible_for_rental(new.customer_id, new.company_id);
+  return new;
+end;
+$$;
+
+drop trigger if exists bookings_customer_eligibility on public.bookings;
+create trigger bookings_customer_eligibility
+before insert or update of customer_id, company_id
+on public.bookings
+for each row execute function public.enforce_booking_customer_eligibility();
+
+create or replace function public.enforce_contract_customer_eligibility()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  -- Re-check on every contract write, including activation/pickup status changes,
+  -- so a licence that expired after booking cannot pass vehicle handover.
+  perform public.assert_customer_eligible_for_rental(new.customer_id, new.company_id);
+  return new;
+end;
+$$;
+
+drop trigger if exists contracts_customer_eligibility on public.contracts;
+create trigger contracts_customer_eligibility
+before insert or update
+on public.contracts
+for each row execute function public.enforce_contract_customer_eligibility();
 
 -- Private documents share the existing private bucket.
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
