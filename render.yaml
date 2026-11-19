@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: arkan-rent-a-car
+    runtime: node
+    plan: free
+    rootDir: arkan-web-app
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        value: https://blknmrmibgklnfqycxnq.supabase.co
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        value: sb_publishable_kRGYnQJ4LY5bdtcfPy3Agw_G6U4hSyv
