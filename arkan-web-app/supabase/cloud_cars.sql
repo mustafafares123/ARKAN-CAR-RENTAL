@@ -17,7 +17,7 @@ begin
 
   select cm.company_id into current_company
   from public.company_members cm
-  where cm.user_id = auth.uid() and cm.role in ('owner','admin')
+  where cm.user_id = auth.uid()
   order by cm.company_id
   limit 1;
 
