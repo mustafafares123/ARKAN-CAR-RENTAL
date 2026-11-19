@@ -52,13 +52,18 @@ export default function Home() {
  const [section,setSection]=useState("dashboard"), [lang,setLang]=useState<"ar"|"en">("ar");
  const [rows,setRows]=useState<Record<string,Row[]>>(initial), [query,setQuery]=useState(""), [showForm,setShowForm]=useState(false);
  const [form,setForm]=useState<Record<string,string>>({}), [notice,setNotice]=useState(""), [mobileOpen,setMobileOpen]=useState(false), [editingId,setEditingId]=useState<string|null>(null);
- const [client,setClient]=useState<SupabaseClient|null>(null), [cloud,setCloud]=useState(false), [loading,setLoading]=useState(false);
+ const [client,setClient]=useState<SupabaseClient|null>(null), [cloud,setCloud]=useState(false), [loading,setLoading]=useState(false), [sessionReady,setSessionReady]=useState(false), [companyId,setCompanyId]=useState<string|null>(null), [email,setEmail]=useState(""), [password,setPassword]=useState("");
  const ar=lang==="ar"; const active=SECTIONS.find(s=>s[0]===section)!; const ActiveIcon=active[3];
- useEffect(()=>{ try {
-   const saved=localStorage.getItem("arkan-data-v1"); if(saved) setRows({...initial,...JSON.parse(saved)});
-   if(envReady){ const sb=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!); setClient(sb); setCloud(true); }
-  } catch(e){} },[]);
- useEffect(()=>{ try{localStorage.setItem("arkan-data-v1",JSON.stringify(rows));}catch(e){} },[rows]);
+ useEffect(()=>{
+  try{const saved=localStorage.getItem("arkan-data-v1");if(saved)setRows({...initial,...JSON.parse(saved)});}catch(e){}
+  if(!envReady){setSessionReady(true);return;}
+  const sb=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+  setClient(sb);setCloud(true);
+  sb.auth.getSession().then(({data})=>{if(data.session)void connectCloud(sb);else setSessionReady(true);});
+  const {data:{subscription}}=sb.auth.onAuthStateChange((_event,session)=>{if(session)void connectCloud(sb);else{setCompanyId(null);setSessionReady(true);}});
+  return ()=>subscription.unsubscribe();
+ },[]);
+ useEffect(()=>{if(!companyId){try{localStorage.setItem("arkan-data-v1",JSON.stringify(rows));}catch(e){}}},[rows,companyId]);
  const allCars=rows.cars||[], allCustomers=rows.customers||[];
  const totalIncome=(rows.cash||[]).filter(x=>x.kind==="قبض"||x.kind==="Receipt").reduce((a,x)=>a+Number(x.amount||0),0);
  const totalExpense=(rows.cash||[]).filter(x=>x.kind==="صرف"||x.kind==="Payment").reduce((a,x)=>a+Number(x.amount||0),0);
@@ -67,26 +72,48 @@ export default function Home() {
  const title=(s:any)=>ar?s[1]:s[2];
  const data=rows[section]||[];
  const filtered=data.filter(r=>Object.values(r).join(" ").toLowerCase().includes(query.toLowerCase()));
- function addRow(e:any){e.preventDefault(); if(editingId){setRows(old=>({...old,[section]:(old[section]||[]).map(r=>r.id===editingId?{...r,...form}:r)}));setNotice(ar?"تم تحديث بيانات السيارة على هذا الجهاز":"Car updated on this device");}else{const id=crypto.randomUUID();setRows(old=>({...old,[section]:[{id,...form},...(old[section]||[])]}));setNotice(ar?"تمت إضافة السجل على هذا الجهاز":"Record added on this device");}setForm({});setEditingId(null);setShowForm(false);}
- function startEdit(r:Row){setEditingId(r.id);setForm(Object.fromEntries((FIELDS[section]||[]).map(k=>[k,String(r[k]??"")]).concat([["image_url",String(r.image_url??"")]])));setShowForm(true);}
- function deleteRow(r:Row){if(!window.confirm(ar?"هل أنت متأكد من حذف هذه السيارة؟ لا يمكن التراجع عن الحذف.":"Delete this car? This cannot be undone."))return;setRows(old=>({...old,[section]:(old[section]||[]).filter(x=>x.id!==r.id)}));setNotice(ar?"تم حذف السيارة من هذا الجهاز":"Car deleted from this device");}
- function handleCarImage(e:any){const file=e.target.files?.[0];if(!file)return;if(!file.type.startsWith("image/")){setNotice(ar?"يرجى اختيار ملف صورة صالح":"Choose a valid image file");return;}if(file.size>8*1024*1024){setNotice(ar?"حجم الصورة كبير. اختر صورة أقل من 8 ميغابايت":"Image is too large. Choose a file under 8 MB");return;}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=1200,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement("canvas");canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);const ctx=canvas.getContext("2d");if(!ctx)return;ctx.drawImage(img,0,0,canvas.width,canvas.height);setForm(old=>({...old,image_url:canvas.toDataURL("image/jpeg",0.78)}));};img.src=String(reader.result);};reader.readAsDataURL(file);}
- async function loadCloud(){
-  if(!client){setNotice(ar?"أضف إعدادات Supabase للاتصال السحابي":"Add Supabase settings to enable cloud sync");return;}
-  setLoading(true);
-  try {
-   const {data:auth}=await client.auth.getSession();
-   if(!auth.session){setNotice(ar?"قاعدة البيانات جاهزة؛ يلزم إعداد تسجيل الدخول والسياسات قبل مزامنة بيانات الشركة.":"Database configured; sign-in and company policies must be set before syncing.");}
-   else {setNotice(ar?"تم الاتصال بحسابك. اربط جداول الشركة قبل تفعيل المزامنة.":"Signed in. Connect company tables before enabling sync.");}
-  } catch(e){setNotice(ar?"تعذر الاتصال. تحقق من إعدادات Supabase.":"Connection failed. Check Supabase settings.");}
-  setLoading(false);
+ async function addRow(e:any){e.preventDefault();
+  if(section==="cars"&&client&&companyId){
+   setLoading(true);try{const id=editingId||crypto.randomUUID();let image_path=form.image_path||null;
+    if(form.image_url?.startsWith("data:image/")){const blob=await(await fetch(form.image_url)).blob();const photoPath=`${companyId}/cars/${id}/${Date.now()}.jpg`;const {error:uploadError}=await client.storage.from("arkan-private").upload(photoPath,blob,{contentType:"image/jpeg",upsert:true});if(uploadError)throw uploadError;image_path=photoPath;}
+    const payload:any={company_id:companyId,car_number:form.car_number||null,plate:form.plate,make:form.make||null,model:form.model||null,year:form.year?Number(form.year):null,status:form.status||"available",daily_rate:form.daily_rate?Number(form.daily_rate):0,color:form.color||null,transmission:form.transmission||null,fuel_type:form.fuel_type||null,image_path};
+    const result=editingId?await client.from("cars").update(payload).eq("id",id).eq("company_id",companyId):await client.from("cars").insert(payload);if(result.error)throw result.error;
+    const {data:cars,error}=await client.from("cars").select("*").eq("company_id",companyId).order("created_at",{ascending:false});if(error)throw error;
+    const mapped=await Promise.all((cars||[]).map(async(car:any)=>{let image_url="";if(car.image_path){const {data}=await client!.storage.from("arkan-private").createSignedUrl(car.image_path,3600);image_url=data?.signedUrl||"";}return {...car,image_url,year:car.year==null?"":String(car.year),daily_rate:String(car.daily_rate??"")};}));
+    setRows(old=>({...old,cars:mapped}));setNotice(ar?"تم حفظ السيارة في قاعدة البيانات السحابية.":"Car saved to cloud database.");
+   }catch(err:any){setNotice((ar?"فشل حفظ السيارة: ":"Could not save car: ")+(err?.message||"Unknown error"));}finally{setLoading(false);}
+  }else{if(editingId)setRows(old=>({...old,[section]:(old[section]||[]).map(r=>r.id===editingId?{...r,...form}:r)}));else{const id=crypto.randomUUID();setRows(old=>({...old,[section]:[{id,...form},...(old[section]||[])]}));}setNotice(ar?"تم حفظ السجل محلياً":"Record saved locally");}
+  setForm({});setEditingId(null);setShowForm(false);
  }
+ function startEdit(r:Row){setEditingId(r.id);setForm(Object.fromEntries((FIELDS[section]||[]).map(k=>[k,String(r[k]??"")]).concat([["image_url",String(r.image_url??"")],["image_path",String(r.image_path??"")]])));setShowForm(true);}
+ async function deleteRow(r:Row){if(!window.confirm(ar?"هل أنت متأكد من حذف هذه السيارة؟ لا يمكن التراجع عن الحذف.":"Delete this car? This cannot be undone."))return;
+  if(section==="cars"&&client&&companyId){setLoading(true);try{const {error}=await client.from("cars").delete().eq("id",r.id).eq("company_id",companyId);if(error)throw error;if(r.image_path)await client.storage.from("arkan-private").remove([r.image_path]);setRows(old=>({...old,cars:(old.cars||[]).filter(x=>x.id!==r.id)}));setNotice(ar?"تم حذف السيارة من السحابة.":"Car deleted from cloud.");}catch(e:any){setNotice((ar?"تعذر الحذف: ":"Delete failed: ")+(e?.message||""));}finally{setLoading(false);}}
+  else{setRows(old=>({...old,[section]:(old[section]||[]).filter(x=>x.id!==r.id)}));setNotice(ar?"تم حذف السجل محلياً":"Record deleted locally");}
+ }
+ function handleCarImage(e:any){const file=e.target.files?.[0];if(!file)return;if(!file.type.startsWith("image/")){setNotice(ar?"يرجى اختيار ملف صورة صالح":"Choose a valid image file");return;}if(file.size>8*1024*1024){setNotice(ar?"حجم الصورة كبير. اختر صورة أقل من 8 ميغابايت":"Image is too large. Choose a file under 8 MB");return;}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=1200,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement("canvas");canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);const ctx=canvas.getContext("2d");if(!ctx)return;ctx.drawImage(img,0,0,canvas.width,canvas.height);setForm(old=>({...old,image_url:canvas.toDataURL("image/jpeg",0.78)}));};img.src=String(reader.result);};reader.readAsDataURL(file);}
+ async function connectCloud(sb:SupabaseClient){
+  setLoading(true);
+  try{
+   const {data:company,error:companyError}=await sb.rpc("create_or_get_my_company",{company_name:"ARKAN CO. – RENT A CAR"});
+   if(companyError)throw companyError;if(!company)throw new Error("Company setup returned no ID");
+   setCompanyId(company);
+   const {data:cars,error}=await sb.from("cars").select("*").eq("company_id",company).order("created_at",{ascending:false});if(error)throw error;
+   const mapped=await Promise.all((cars||[]).map(async(car:any)=>{let image_url="";if(car.image_path){const {data}=await sb.storage.from("arkan-private").createSignedUrl(car.image_path,3600);image_url=data?.signedUrl||"";}return {...car,image_url,year:car.year==null?"":String(car.year),daily_rate:String(car.daily_rate??"")};}));
+   setRows(old=>({...old,cars:mapped}));setNotice(ar?"تم الاتصال بقاعدة البيانات السحابية وتحميل السيارات.":"Connected to cloud database and loaded vehicles.");
+  }catch(e:any){setCompanyId(null);setNotice(ar?"تعذر إعداد السحابة. شغّل ملف supabase/cloud_cars.sql وتحقق من تسجيل الدخول. ":"Cloud setup failed. Run supabase/cloud_cars.sql and verify sign-in. "+(e?.message||""));}
+  finally{setLoading(false);setSessionReady(true);}
+ }
+ async function signIn(){if(!client)return;setLoading(true);const {error}=await client.auth.signInWithPassword({email,password});if(error)setNotice(error.message);setLoading(false);}
+ async function signUp(){if(!client)return;setLoading(true);const {data,error}=await client.auth.signUp({email,password});if(error)setNotice(error.message);else if(!data.session)setNotice(ar?"تم إنشاء الحساب. افحص بريدك لتأكيده ثم سجّل الدخول.":"Account created. Check your email to confirm, then sign in.");setLoading(false);}
+ async function signOut(){if(!client)return;await client.auth.signOut();setCompanyId(null);setRows(old=>({...old,cars:initial.cars}));}
+ if(envReady&&!sessionReady)return <main className="app" dir="rtl"><div className="auth-gate"><div className="auth-card"><div className="brand-mark">A</div><h1>ARKAN CO.</h1><p>{ar?"جارٍ الاتصال بقاعدة بيانات أركان...":"Connecting to ARKAN cloud..."}</p></div></div></main>;
+ if(envReady&&!companyId)return <main className="app" dir="rtl"><div className="auth-gate"><div className="auth-card"><div className="brand-mark">A</div><h1>ARKAN CO.</h1><p>{ar?"سجّل الدخول لمزامنة سيارات الشركة وصورها بين الأجهزة.":"Sign in to sync company vehicles and photos across devices."}</p><label>{ar?"البريد الإلكتروني":"Email"}<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></label><label>{ar?"كلمة المرور":"Password"}<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></label><button className="primary-btn" disabled={loading||!email||password.length<6} onClick={signIn}>{ar?"تسجيل الدخول":"Sign in"}</button><button className="secondary-btn" disabled={loading||!email||password.length<6} onClick={signUp}>{ar?"إنشاء حساب جديد":"Create account"}</button>{notice&&<p className="auth-notice">{notice}</p>}<small>{ar?"يجب تشغيل إعداد قاعدة البيانات السحابية أولاً.":"Cloud database setup must be applied first."}</small></div></div></main>;
  const nav=<>{SECTIONS.map(s=>{const Icon=s[3];return <button key={s[0]} className={"nav-item "+(section===s[0]?"selected":"")} onClick={()=>{setSection(s[0]);setQuery("");setMobileOpen(false)}}><Icon size={18}/><span>{title(s)}</span></button>})}</>;
  const sectionLabel=title(active);
  return <main className={ar?"app rtl":"app ltr"} dir={ar?"rtl":"ltr"}>
   <aside className={"sidebar "+(mobileOpen?"open":"")}><div className="brand"><div className="brand-mark">A</div><div><b>ARKAN CO.</b><small>RENT A CAR</small></div><button className="close-mobile" onClick={()=>setMobileOpen(false)}><X/></button></div>
    <div className="company-tag">{ar?"نظام إدارة تأجير السيارات":"Car Rental Management"}</div><nav>{nav}</nav>
-   <div className="sidebar-bottom"><div className="cloud-state"><span className={cloud?"dot amber":"dot"}></span><div><b>{cloud?(ar?"إعداد السحابة موجود":"Cloud configured"):(ar?"وضع تجريبي محلي":"Local demo mode")}</b><small>{ar?"حالة التخزين":"Storage status"}</small></div></div><button className="nav-item" onClick={()=>setNotice(ar?"الإعدادات ستضاف في المرحلة التالية":"Settings will be added in the next phase")}><Settings size={18}/>{ar?"الإعدادات":"Settings"}</button></div>
+   <div className="sidebar-bottom"><div className="cloud-state"><span className={cloud?"dot amber":"dot"}></span><div><b>{cloud?(ar?"إعداد السحابة موجود":"Cloud configured"):(ar?"وضع تجريبي محلي":"Local demo mode")}</b><small>{ar?"حالة التخزين":"Storage status"}</small></div></div><button className="nav-item" onClick={()=>setNotice(ar?"الإعدادات ستضاف في المرحلة التالية":"Settings will be added in the next phase")}><Settings size={18}/>{ar?"الإعدادات":"Settings"}</button>{companyId&&<button className="nav-item" onClick={signOut}><LogOut size={18}/>{ar?"تسجيل الخروج":"Sign out"}</button>}</div>
   </aside>
   {mobileOpen&&<div className="scrim" onClick={()=>setMobileOpen(false)} />}
   <section className="main-area"><header className="topbar"><button className="mobile-menu" onClick={()=>setMobileOpen(true)}><Menu/></button><div><div className="eyebrow">{ar?"مرحباً بك في":"WELCOME TO"}</div><h1>{ar?"إدارة أسطول ARKAN":"ARKAN Fleet Management"}</h1></div><div className="top-actions"><button className="icon-btn" onClick={()=>setNotice(ar?"لا توجد تنبيهات جديدة":"No new notifications")}><Bell size={18}/></button><button className="language-btn" onClick={()=>setLang(ar?"en":"ar")}><Languages size={17}/>{ar?"English":"العربية"}</button><div className="avatar">A</div></div></header>
