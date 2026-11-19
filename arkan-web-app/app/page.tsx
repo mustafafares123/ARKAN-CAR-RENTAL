@@ -52,10 +52,10 @@ export default function Home() {
  const [section,setSection]=useState("dashboard"), [lang,setLang]=useState<"ar"|"en">("ar");
  const [rows,setRows]=useState<Record<string,Row[]>>(initial), [query,setQuery]=useState(""), [showForm,setShowForm]=useState(false);
  const [form,setForm]=useState<Record<string,string>>({}), [notice,setNotice]=useState(""), [mobileOpen,setMobileOpen]=useState(false), [editingId,setEditingId]=useState<string|null>(null);
- const [client,setClient]=useState<SupabaseClient|null>(null), [cloud,setCloud]=useState(false), [loading,setLoading]=useState(false), [sessionReady,setSessionReady]=useState(false), [companyId,setCompanyId]=useState<string|null>(null), [email,setEmail]=useState(""), [password,setPassword]=useState("");
+ const [client,setClient]=useState<SupabaseClient|null>(null), [cloud,setCloud]=useState(false), [loading,setLoading]=useState(false), [sessionReady,setSessionReady]=useState(false), [localLoaded,setLocalLoaded]=useState(false), [companyId,setCompanyId]=useState<string|null>(null), [email,setEmail]=useState(""), [password,setPassword]=useState("");
  const ar=lang==="ar"; const active=SECTIONS.find(s=>s[0]===section)!; const ActiveIcon=active[3];
  useEffect(()=>{
-  try{const saved=localStorage.getItem("arkan-data-v1");if(saved)setRows({...initial,...JSON.parse(saved)});}catch(e){}
+  try{const saved=localStorage.getItem("arkan-data-v1");if(saved)setRows({...initial,...JSON.parse(saved)});}catch(e){}finally{setLocalLoaded(true);}
   if(!envReady){setSessionReady(true);return;}
   const sb=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
   setClient(sb);setCloud(true);
@@ -63,7 +63,7 @@ export default function Home() {
   const {data:{subscription}}=sb.auth.onAuthStateChange((_event,session)=>{if(session)void connectCloud(sb);else{setCompanyId(null);setSessionReady(true);}});
   return ()=>subscription.unsubscribe();
  },[]);
- useEffect(()=>{if(!companyId){try{localStorage.setItem("arkan-data-v1",JSON.stringify(rows));}catch(e){}}},[rows,companyId]);
+ useEffect(()=>{if(localLoaded&&!companyId){try{localStorage.setItem("arkan-data-v1",JSON.stringify(rows));}catch(e){}}},[rows,companyId,localLoaded]);
  const allCars=rows.cars||[], allCustomers=rows.customers||[];
  const totalIncome=(rows.cash||[]).filter(x=>x.kind==="قبض"||x.kind==="Receipt").reduce((a,x)=>a+Number(x.amount||0),0);
  const totalExpense=(rows.cash||[]).filter(x=>x.kind==="صرف"||x.kind==="Payment").reduce((a,x)=>a+Number(x.amount||0),0);
