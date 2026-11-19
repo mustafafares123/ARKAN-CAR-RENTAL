@@ -49,7 +49,9 @@ const initial: Record<string,Row[]> = {
  bookings:[],contracts:[],cash:[],maintenance:[],trackers:[],fines:[]
 };
 const money = (v:any) => new Intl.NumberFormat("en-US",{maximumFractionDigits:2}).format(Number(v||0));
-const envReady = typeof process !== "undefined" && !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://blknmrmibgklnfqycxnq.supabase.co";
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_kRGYnQJ4LY5bdtcfPy3Agw_G6U4hSyv";
+const envReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
 export default function Home() {
  const [section,setSection]=useState("dashboard"), [lang,setLang]=useState<"ar"|"en">("ar");
@@ -60,7 +62,7 @@ export default function Home() {
  useEffect(()=>{
   try{const saved=localStorage.getItem("arkan-data-v1");if(saved)setRows({...initial,...JSON.parse(saved)});}catch(e){}finally{setLocalLoaded(true);}
   if(!envReady){setSessionReady(true);return;}
-  const sb=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+  const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
   setClient(sb);setCloud(true);
   sb.auth.getSession().then(({data})=>{if(data.session)void connectCloud(sb);else setSessionReady(true);});
   const {data:{subscription}}=sb.auth.onAuthStateChange((_event,session)=>{if(session)void connectCloud(sb);else{setCompanyId(null);setSessionReady(true);}});
