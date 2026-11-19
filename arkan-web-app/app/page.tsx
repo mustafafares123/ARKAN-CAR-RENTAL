@@ -77,7 +77,7 @@ export default function Home() {
    const today=new Date();const birth=new Date((form.date_of_birth||"1900-01-01")+"T00:00:00");const issue=new Date((form.license_issue_date||"1900-01-01")+"T00:00:00");const expiry=new Date((form.license_expiry_date||"1900-01-01")+"T00:00:00");
    const age=today.getFullYear()-birth.getFullYear()-((today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate()))?1:0);
    const tenure=today.getFullYear()-issue.getFullYear()-((today.getMonth()<issue.getMonth()||(today.getMonth()===issue.getMonth()&&today.getDate()<issue.getDate()))?1:0);
-   if(!form.identity_front||!form.identity_back){setNotice(ar?"صورة الهوية الأمامية والخلفية إلزامية.":"Both front and back ID images are required.");return;}
+   if(!(form.identity_front||form.identity_front_path)||!(form.identity_back||form.identity_back_path)){setNotice(ar?"صورة الهوية الأمامية والخلفية إلزامية.":"Both front and back ID images are required.");return;}
    if(!form.date_of_birth||age<24){setNotice(ar?"مرفوض: يجب أن يكون عمر العميل 24 سنة على الأقل.":"Rejected: customer must be at least 24 years old.");return;}
    if(!form.license_issue_date||tenure<2||(tenure===2&&today.getMonth()===issue.getMonth()&&today.getDate()<=issue.getDate())){setNotice(ar?"مرفوض: يجب أن يكون قد مضى أكثر من سنتين على إصدار الرخصة.":"Rejected: driving licence must have been held for more than two years.");return;}
    if(!form.license_expiry_date||expiry<today||expiry<=issue){setNotice(ar?"الرخصة منتهية أو تاريخها غير صحيح.":"Licence is expired or dates are invalid.");return;}
@@ -88,6 +88,16 @@ export default function Home() {
    }catch(err:any){setNotice((ar?"تعذر حفظ العميل: ":"Customer save failed: ")+(err?.message||""));}finally{setLoading(false);}}
    else{const id=editingId||crypto.randomUUID();const customerData={...form,additional_phones:(form.additional_phones||"").split(/[,،;\n]+/).map(x=>x.trim()).filter(Boolean)};setRows(old=>({...old,customers:editingId?(old.customers||[]).map(x=>x.id===id?{...x,...customerData}:x):[{id,...customerData},...(old.customers||[])]}));setNotice(ar?"تم حفظ ملف العميل محلياً.":"Customer saved locally.");}
    setForm({});setEditingId(null);setShowForm(false);return;
+  }
+  if(section==="bookings"||section==="contracts"){
+   const customer=(rows.customers||[]).find(c=>String(c.full_name||"").trim().toLowerCase()===String(form.customer_name||"").trim().toLowerCase()||String(c.phone||"").trim()===String(form.customer_name||"").trim());
+   if(!customer){setNotice(ar?"مرفوض: اختر/اكتب اسم عميل مسجل ومستوفٍ للشروط.":"Rejected: select or enter a registered eligible customer.");return;}
+   const now=new Date();const birth=new Date(String(customer.date_of_birth||"1900-01-01")+"T00:00:00");const issue=new Date(String(customer.license_issue_date||"1900-01-01")+"T00:00:00");const expiry=new Date(String(customer.license_expiry_date||"1900-01-01")+"T00:00:00");
+   const age=now.getFullYear()-birth.getFullYear()-((now.getMonth()<birth.getMonth()||(now.getMonth()===birth.getMonth()&&now.getDate()<birth.getDate()))?1:0);
+   const tenure=now.getFullYear()-issue.getFullYear()-((now.getMonth()<issue.getMonth()||(now.getMonth()===issue.getMonth()&&now.getDate()<issue.getDate()))?1:0);
+   if(age<24||tenure<2||(tenure===2&&(now.getMonth()<issue.getMonth()||(now.getMonth()===issue.getMonth()&&now.getDate()<=issue.getDate())))||!customer.license_expiry_date||expiry<new Date(now.getFullYear(),now.getMonth(),now.getDate())){
+    setNotice(ar?"مرفوض: لا يمكن إنشاء حجز أو عقد؛ تحقق من العمر وصلاحية الرخصة ومدة امتلاكها.":"Rejected: booking/contract blocked. Check age, licence validity and holding period.");return;
+   }
   }
   if(section==="cars"&&client&&companyId){
    setLoading(true);try{const id=editingId||crypto.randomUUID();let image_path=form.image_path||null;
