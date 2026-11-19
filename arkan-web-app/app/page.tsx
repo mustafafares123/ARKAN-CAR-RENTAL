@@ -56,7 +56,7 @@ const envReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 export default function Home() {
  const [section,setSection]=useState("dashboard"), [lang,setLang]=useState<"ar"|"en">("ar");
  const [rows,setRows]=useState<Record<string,Row[]>>(initial), [query,setQuery]=useState(""), [showForm,setShowForm]=useState(false);
- const [form,setForm]=useState<Record<string,string>>({}), [notice,setNotice]=useState(""), [mobileOpen,setMobileOpen]=useState(false), [editingId,setEditingId]=useState<string|null>(null);
+ const [form,setForm]=useState<Record<string,any>>({}), [notice,setNotice]=useState(""), [mobileOpen,setMobileOpen]=useState(false), [editingId,setEditingId]=useState<string|null>(null);
  const [client,setClient]=useState<SupabaseClient|null>(null), [cloud,setCloud]=useState(false), [loading,setLoading]=useState(false), [sessionReady,setSessionReady]=useState(false), [localLoaded,setLocalLoaded]=useState(false), [companyId,setCompanyId]=useState<string|null>(null), [email,setEmail]=useState(""), [password,setPassword]=useState("");
  const ar=lang==="ar"; const active=SECTIONS.find(s=>s[0]===section)!; const ActiveIcon=active[3];
  useEffect(()=>{
