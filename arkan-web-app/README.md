@@ -67,6 +67,15 @@
 - يعرض المركز بيانات مساحة العمل والفرع المحدد فقط؛ لا يثبت ذلك اكتمال المزامنة السحابية لجميع الأقسام.
 - تبقى خدمات GPS الحي وWhatsApp API والدفع الإلكتروني والذكاء الاصطناعي الخارجي غير مفعلة حتى توفير مزوديها وبيانات الاعتماد السرية ومراجعة الخصوصية.
 
+
+## ARKAN operations workspaces
+
+- **Partners & Suppliers:** records for workshops, insurance/service providers, suppliers, contacts and payment terms.
+- **Drivers & Delivery:** driver directory, licence expiry, availability and assigned delivery tasks.
+- **Vehicle Marketplace:** internal vehicle-listing drafts with car, daily rate, channel and validity dates. This does not publish to external marketplaces automatically.
+- **Customer Support:** customer requests, priority, status, assignee and resolution notes.
+- These workspaces use the existing branch-scoped `arkan_records` store and its current RLS policies; no destructive schema migration is required. They inherit the same cloud/local limitations described above.
+
 ## تحديثات ARKAN المتقدمة
 
 - **بوابة العميل:** افتح قسم «بوابة العملاء» من حساب إدارة الشركة وانسخ رابط الدعوة. يفتح العميل الرابط بصيغة `/portal?company=<company-id>`، ثم ينشئ حساباً أو يسجل الدخول ويرسل طلب ربط. يجب على المسؤول اختيار ملف العميل الصحيح والتحقق من الهوية والرخصة قبل اعتماد الطلب.
