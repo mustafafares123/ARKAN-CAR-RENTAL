@@ -124,7 +124,7 @@ export default function Home() {
  const title=(s:any)=>ar?s[1]:s[2];
  // Normalize Arabic currency labels and common abbreviations before any financial aggregation.
  const normalizeCurrency=(value:any)=>{const raw=String(value||"ILS").trim().toUpperCase();if(["شيكل","شيكل اسرائيلي","شيكل إسرائيلي","₪","NIS","ILS"].includes(raw))return "ILS";if(["دولار","دولار امريكي","دولار أمريكي","$","US$","USD"].includes(raw))return "USD";if(["دينار","دينار اردني","دينار أردني","JOD"].includes(raw))return "JOD";if(["يورو","€","EUR"].includes(raw))return "EUR";return raw||"ILS";};
- const currencyOf=(r:{currency?:any})=>normalizeCurrency(r.currency);
+ const currencyOf=(r:Record<string,any>)=>normalizeCurrency(r.currency);
  const cashTypeOf=(kind:any):"receipt"|"expense"|"unknown"=>{const value=String(kind||"").trim().toLowerCase();if(["قبض","قبض نقدي","مقبوض","استلام","إيراد","ايراد","receipt","income","received"].includes(value))return "receipt";if(["صرف","صرف نقدي","دفع","مصروف","مصروفات","payment","expense","paid"].includes(value))return "expense";return "unknown";};
  const unclassifiedCash=(rows.cash||[]).filter(r=>cashTypeOf(r.kind)==="unknown");
  const maintenanceCost=(rows.maintenance||[]).reduce((a,x)=>a+Number(x.cost||0),0);
