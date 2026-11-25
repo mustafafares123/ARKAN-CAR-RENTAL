@@ -34,7 +34,7 @@ export default function OwnerPage() {
     if (recordResult.error) throw recordResult.error;
     if (approvalResult.error) throw approvalResult.error;
     if (findingResult.error) throw findingResult.error;
-    const records = (recordResult.data || []).map((item: any) => ({ ...item.record_data, id: item.id, created_at: item.created_at }));
+    const records = (recordResult.data || []).map((item: any) => ({ ...item.record_data, id: item.id, section: item.section, created_at: item.created_at }));
     const contractsData = records.filter((r: any) => r.section === "contracts");
     const cashData = records.filter((r: any) => r.section === "cash");
     setCars(carResult.data || []);
