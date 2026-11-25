@@ -6,7 +6,7 @@ type AnyRow = { id?: string; [key: string]: any };
 type Props = {
   ar: boolean; cars: AnyRow[]; customers: AnyRow[]; bookings: AnyRow[]; contracts: AnyRow[];
   cash: AnyRow[]; maintenance: AnyRow[]; insurance: AnyRow[]; vehicleCosts: AnyRow[];
-  alerts: AnyRow[]; debts: AnyRow[]; branches: AnyRow[]; activeBranchId: string;
+  alerts: AnyRow[]; debts: AnyRow[]; incidents: AnyRow[]; fines: AnyRow[]; branches: AnyRow[]; activeBranchId: string;
   onOpen: (section: string) => void;
 };
 const amount = (value: unknown) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(Number(value || 0));
@@ -18,7 +18,7 @@ const cashKind = (kind: unknown) => {
   return "unknown";
 };
 
-export default function ControlCenter({ ar, cars, customers, bookings, contracts, cash, maintenance, insurance, vehicleCosts, alerts, debts, branches, activeBranchId, onOpen }: Props) {
+export default function ControlCenter({ ar, cars, customers, bookings, contracts, cash, maintenance, insurance, vehicleCosts, alerts, debts, incidents, fines, branches, activeBranchId, onOpen }: Props) {
   const today = new Date();
   const todayText = dayKey(today);
   const monthText = todayText.slice(0, 7);
@@ -27,6 +27,9 @@ export default function ControlCenter({ ar, cars, customers, bookings, contracts
   const availableCars = cars.filter((r) => ["متاحة", "available"].includes(String(r.status || "").toLowerCase()));
   const rentedCars = cars.filter((r) => ["مؤجرة", "rented"].includes(String(r.status || "").toLowerCase()));
   const serviceCars = cars.filter((r) => ["صيانة", "maintenance"].includes(String(r.status || "").toLowerCase()));
+  const utilization = cars.length ? Math.round((rentedCars.length / cars.length) * 100) : 0;
+  const openIncidents = incidents.filter((r) => !["closed", "resolved", "مغلق", "تمت المعالجة"].includes(String(r.incident_status || "").toLowerCase()));
+  const unpaidFines = fines.filter((r) => !["paid", "collected", "مدفوعة", "محصلة", "مغلق"].includes(String(r.collection_status || "").toLowerCase()));
   const monthCash = cash.filter((r) => String(r.transaction_date || r.created_at || "").slice(0, 7) === monthText);
   const receipts = monthCash.filter((r) => cashKind(r.kind) === "receipt").reduce((sum, r) => sum + Number(r.amount || 0), 0);
   const cashExpenses = monthCash.filter((r) => cashKind(r.kind) === "expense").reduce((sum, r) => sum + Number(r.amount || 0), 0);
@@ -42,7 +45,7 @@ export default function ControlCenter({ ar, cars, customers, bookings, contracts
     return acc;
   }, {});
   const currentBranch = branches.find((b) => b.id === activeBranchId);
-  const urgentAlerts = alerts.filter((r) => Number(r.days) <= 7);
+  const urgentAlerts = alerts.filter((r) => r.days === null || Number(r.days) <= 7);
   const stat = (label: string, value: string | number, hint: string, icon: React.ReactNode, tone: string, action: string) => (
     <button type="button" className="cc-stat" onClick={() => onOpen(action)}>
       <span className={"cc-stat-icon " + tone}>{icon}</span>
@@ -63,6 +66,9 @@ export default function ControlCenter({ ar, cars, customers, bookings, contracts
       {stat(ar ? "الديون المفتوحة" : "Open receivables", debts.length, ar ? "عقود لها رصيد متبقٍ" : "Contracts with a balance", <Wallet/>, "gold", "debts")}
       {stat(ar ? "العملاء" : "Customers", customers.length, ar ? "ملفات العملاء" : "Customer profiles", <CheckCircle2/>, "blue", "customers")}
       {stat(ar ? "الحجوزات" : "Bookings", bookings.length, ar ? "كل الحجوزات المسجلة" : "Recorded bookings", <FileWarning/>, "purple", "bookings")}
+      {stat(ar ? "نسبة تشغيل الأسطول" : "Fleet utilization", utilization + "%", ar ? "حسب حالة السيارات المسجلة" : "Based on recorded vehicle status", <Gauge/>, "gold", "cars")}
+      {stat(ar ? "الحوادث المفتوحة" : "Open incidents", openIncidents.length, ar ? "تحتاج معالجة أو إغلاق" : "Need resolution or closure", <AlertTriangle/>, "red", "incidents")}
+      {stat(ar ? "المخالفات غير المحصلة" : "Unpaid fines", unpaidFines.length, ar ? "تحتاج مراجعة وتحصيل" : "Need review and collection", <FileWarning/>, "orange", "fines")}
     </div>
     <div className="cc-two-columns">
       <div className="cc-panel"><div className="cc-panel-head"><div><h3>{ar ? "حركة الصندوق هذا الشهر" : "Cash movement this month"}</h3><p>{monthText}</p></div><Wallet size={20}/></div>
@@ -79,7 +85,7 @@ export default function ControlCenter({ ar, cars, customers, bookings, contracts
     </div>
     <div className="cc-two-columns">
       <div className="cc-panel"><div className="cc-panel-head"><div><h3>{ar ? "التنبيهات التي تحتاج متابعة" : "Alerts requiring attention"}</h3><p>{ar ? "العاجل والمتأخر أولاً" : "Urgent and overdue items first"}</p></div><AlertTriangle size={20}/></div>
-        {urgentAlerts.length ? <div className="cc-alert-list">{urgentAlerts.slice(0, 6).map((item) => <button type="button" key={item.id} onClick={() => onOpen(item.target || "alerts")}><span className={Number(item.days) < 0 ? "cc-alert-dot danger" : "cc-alert-dot"}></span><span><b>{item.title}</b><small>{item.date}</small></span><em>{Number(item.days) < 0 ? (ar ? "متأخر" : "Overdue") : (ar ? String(item.days) + " يوم" : String(item.days) + " days")}</em></button>)}</div> : <div className="cc-empty cc-success"><CheckCircle2 size={18}/>{ar ? "لا توجد تنبيهات عاجلة خلال الأيام السبعة القادمة." : "No urgent alerts in the next seven days."}</div>}
+        {urgentAlerts.length ? <div className="cc-alert-list">{urgentAlerts.slice(0, 6).map((item) => <button type="button" key={item.id} onClick={() => onOpen(item.target || "alerts")}><span className={Number(item.days) < 0 ? "cc-alert-dot danger" : "cc-alert-dot"}></span><span><b>{item.title}</b><small>{item.date}</small></span><em>{item.days === null ? (ar ? "متابعة" : "Follow-up") : Number(item.days) < 0 ? (ar ? "متأخر" : "Overdue") : (ar ? String(item.days) + " يوم" : String(item.days) + " days")}</em></button>)}</div> : <div className="cc-empty cc-success"><CheckCircle2 size={18}/>{ar ? "لا توجد تنبيهات عاجلة خلال الأيام السبعة القادمة." : "No urgent alerts in the next seven days."}</div>}
         <button type="button" className="cc-link" onClick={() => onOpen("alerts")}>{ar ? "عرض جميع التنبيهات ←" : "View all alerts →"}</button>
       </div>
       <div className="cc-panel"><div className="cc-panel-head"><div><h3>{ar ? "متابعة العقود والالتزامات" : "Contracts & obligations"}</h3><p>{ar ? "أهم مؤشرات المتابعة" : "Key follow-up indicators"}</p></div><FileWarning size={20}/></div>
