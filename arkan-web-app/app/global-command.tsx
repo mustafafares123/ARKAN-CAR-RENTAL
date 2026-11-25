@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import { Activity, AlertTriangle, ArrowUpRight, CalendarClock, CarFront, CheckCircle2, ClipboardCheck, FileWarning, Gauge, ShieldCheck, Wallet, Wrench } from "lucide-react";
 
 type Row = { id?: string; [key: string]: any };
 type Props = {
   ar: boolean; cars: Row[]; customers: Row[]; contracts: Row[];
-  cash: Row[]; maintenance: Row[]; insurance: Row[]; vehicleCosts: Row[];
+  cash: Row[]; cashClosings: Row[]; maintenance: Row[];
   inspections: Row[]; incidents: Row[]; fines: Row[]; debts: Row[]; alerts: Row[];
   branches: Row[]; activeBranchId: string; onOpen: (section: string) => void;
 };
@@ -25,7 +24,7 @@ const completed = (value: unknown) => ["completed", "مكتمل", "منتهي", 
 const vehicleTokens = (value: unknown) => norm(value).split(/\s+-\s+|\s*[|,،]\s*/).filter(Boolean);
 
 export default function GlobalCommand({
-  ar, cars, customers, contracts, cash, maintenance, insurance, vehicleCosts,
+  ar, cars, customers, contracts, cash, cashClosings, maintenance,
   inspections, incidents, fines, debts, alerts, branches, activeBranchId, onOpen
 }: Props) {
   const today = new Date().toISOString().slice(0, 10);
@@ -40,12 +39,12 @@ export default function GlobalCommand({
     if (!no) return false;
     return !inspections.some(item => norm(item.contract_no) === no && norm(item.stage) === "pickup");
   });
-  const overdueAlerts = alerts.filter(row => Number(row.days) < 0);
+  const cashVariance = cashClosings.filter(row => norm(row.status) === "difference" || Math.abs(Number(row.difference || 0)) >= 0.01);\n  const overlappingContracts = activeContracts.filter((left, index) => activeContracts.slice(index + 1).some(right => {\n    const leftCar = norm(left.car_label); const rightCar = norm(right.car_label);\n    return leftCar && leftCar === rightCar && dateKey(left.start_date) && dateKey(left.end_date) && dateKey(right.start_date) && dateKey(right.end_date) && dateKey(left.start_date) <= dateKey(right.end_date) && dateKey(right.start_date) <= dateKey(left.end_date);\n  }));\n  const overdueAlerts = alerts.filter(row => Number(row.days) < 0);
   const expiringAlerts = alerts.filter(row => row.days !== null && Number(row.days) >= 0 && Number(row.days) <= 7);
   const utilization = cars.length ? Math.round((cars.filter(row => ["rented", "مؤجرة"].includes(norm(row.status))).length / cars.length) * 100) : 0;
   const branch = branches.find(row => row.id === activeBranchId);
 
-  const risks = useMemo(() => {
+  const risks = (() => {
     const result: { id: string; title: string; detail: string; level: "high" | "medium"; target: string }[] = [];
     overdueContracts.forEach(row => result.push({
       id: "late-" + row.id, title: ar ? "عقد تجاوز موعد الإرجاع" : "Rental contract is overdue",
@@ -72,20 +71,20 @@ export default function GlobalCommand({
       detail: [row.car_label, row.fine_type, row.amount, row.currency || "ILS"].filter(Boolean).join(" · "),
       level: "medium", target: "fines"
     }));
-    expiringAlerts.forEach(row => result.push({
+    cashVariance.forEach(row => result.push({\n      id: "cash-close-" + row.id, title: ar ? "فرق في إغلاق الصندوق" : "Cash closing variance",\n      detail: [dateKey(row.close_date), row.currency || "ILS", row.difference].filter(Boolean).join(" · "),\n      level: "high", target: "cash_closings"\n    }));\n    overlappingContracts.forEach(row => result.push({\n      id: "overlap-" + row.id, title: ar ? "احتمال تداخل عقود السيارة" : "Potential overlapping vehicle rentals",\n      detail: [row.contract_no, row.car_label, row.start_date, row.end_date].filter(Boolean).join(" · "),\n      level: "high", target: "contracts"\n    }));\n    expiringAlerts.forEach(row => result.push({
       id: "due-" + row.id, title: row.title || (ar ? "استحقاق قريب" : "Upcoming due date"),
       detail: [row.date, row.days === 0 ? (ar ? "اليوم" : "Today") : String(row.days) + (ar ? " يوم" : " days")].join(" · "),
       level: "medium", target: row.target || "alerts"
     }));
     return result.slice(0, 30);
-  }, [overdueContracts, unclassifiedCash, openIncidents, missingPickup, unpaidFines, expiringAlerts, ar]);
+  })();
 
   const metrics = [
     { label: ar ? "عقود متأخرة" : "Overdue contracts", value: overdueContracts.length, icon: <CalendarClock/>, tone: "red", target: "contracts" },
     { label: ar ? "حركات غير مصنفة" : "Unclassified cash", value: unclassifiedCash.length, icon: <Wallet/>, tone: "orange", target: "cash" },
     { label: ar ? "حوادث مفتوحة" : "Open incidents", value: openIncidents.length, icon: <AlertTriangle/>, tone: "red", target: "incidents" },
     { label: ar ? "فحوص تسليم ناقصة" : "Missing pickup checks", value: missingPickup.length, icon: <ClipboardCheck/>, tone: "gold", target: "inspections" },
-    { label: ar ? "مخالفات غير محصلة" : "Unpaid fines", value: unpaidFines.length, icon: <FileWarning/>, tone: "orange", target: "fines" },
+    { label: ar ? "مخالفات غير محصلة" : "Unpaid fines", value: unpaidFines.length, icon: <FileWarning/>, tone: "orange", target: "fines" },\n    { label: ar ? "فروقات إغلاق الصندوق" : "Cash closing variances", value: cashVariance.length, icon: <Wallet/>, tone: "red", target: "cash_closings" },
     { label: ar ? "تنبيهات متأخرة" : "Overdue alerts", value: overdueAlerts.length, icon: <Activity/>, tone: "red", target: "alerts" }
   ];
 
