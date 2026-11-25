@@ -18,10 +18,12 @@ const SECTIONS = [
   ["customers","العملاء","Customers",Users],
   ["bookings","الحجوزات","Bookings",CalendarDays],
   ["contracts","العقود","Contracts",FileText],
+  ["legal_contracts","الإدارة القانونية للعقود","Legal Contract Management",FileText],
   ["cash","الصندوق","Cashbox",Wallet],
   ["cash_closings","إغلاق الصندوق اليومي","Daily Cash Closing",Calculator],
   ["insurance","تأمين السيارات","Vehicle Insurance",ShieldCheck],
   ["vehicle_costs","الترخيص وتكاليف السيارات","Registration & Costs",FileText],
+  ["assets","إدارة أصول السيارات","Vehicle Asset Management",CarFront],
   ["reports","التقارير وكشوف الحسابات","Reports & Statements",BarChart3],
   ["maintenance","الصيانة","Maintenance",Wrench],
   ["trackers","أجهزة التتبع","GPS Devices",MapPin],
@@ -43,6 +45,7 @@ const SECTIONS = [
   ["archive","الأرشيف الإلكتروني","Digital Archive",Archive],
   ["ai","مساعد ARKAN الذكي","ARKAN Assistant",BrainCircuit],
   ["partners","الشركاء والموردون","Partners & Suppliers",Handshake],
+  ["procurement","المشتريات وأوامر الشراء","Procurement & Purchase Orders",Truck],
   ["drivers","السائقون والتوصيل","Drivers & Delivery",Truck],
   ["market","سوق عروض السيارات","Vehicle Marketplace",Megaphone],
   ["support","خدمة العملاء والشكاوى","Customer Support",Headset]
@@ -71,7 +74,10 @@ const LABELS: Record<string,string[]> = {
  partners:["اسم الشريك / المورد","نوع الشريك","الشخص المسؤول","الهاتف","البريد الإلكتروني","نوع الخدمة","شروط الدفع","الحالة","ملاحظات"],
  drivers:["اسم السائق","رقم الهاتف","رقم الرخصة","انتهاء الرخصة","الفرع","حالة التوفر","المهمة الحالية","ملاحظات"],
  market:["السيارة","عنوان العرض","السعر اليومي","العملة","قناة الإعلان","تاريخ البداية","تاريخ النهاية","حالة العرض","هاتف الاستفسار"],
- support:["اسم العميل","الهاتف","نوع الطلب","الأولوية","الحالة","تاريخ الفتح","وصف المشكلة","الموظف المسؤول","الحل / الإجراء"]
+ support:["اسم العميل","الهاتف","نوع الطلب","الأولوية","الحالة","تاريخ الفتح","وصف المشكلة","الموظف المسؤول","الحل / الإجراء"],
+ assets:["السيارة / اللوحة","تاريخ الشراء","تكلفة الاقتناء","العملة","العمر الإنتاجي (سنوات)","القيمة المتبقية","القيمة السوقية الحالية","تاريخ التقييم","تاريخ البيع","سعر البيع","حالة الأصل","ملاحظات"],
+ legal_contracts:["رقم العقد المرتبط","اسم قالب العقد","إصدار القالب","الحالة القانونية","اسم الموقّع","تاريخ التوقيع","تاريخ التجديد / الانتهاء","شروط الغرامات","ملخص الشروط","اسم ملف العقد","ملاحظات"],
+ procurement:["اسم المورد","رقم أمر الشراء","تاريخ الطلب","موعد التسليم المتوقع","تاريخ الاستلام","الصنف / الخدمة","التصنيف","الكمية","سعر الوحدة","الإجمالي","العملة","حالة الطلب","رقم الفاتورة","ملاحظات"]
 };
 const INSURANCE_COMPANIES=["شركة المشرق للتأمين","شركة فلسطين للتأمين","شركة التأمين الوطنية","شركة ترست العالمية للتأمين","شركة المجموعة الأهلية للتأمين","شركة التكافل الفلسطينية للتأمين","شركة العالمية المتحدة للتأمين","شركة تمكين الفلسطينية للتأمين","شركة البركة للتأمين الإسلامي","شركة الأراضي المقدسة للتأمين التكافلي","شركة أخرى"];
 const INSURANCE_TYPES=["تأمين فريق ثالث","فريق ثالث مع شامل","تأمين شامل"];
@@ -99,14 +105,17 @@ const FIELDS: Record<string,string[]> = {
  partners:["partner_name","partner_type","contact_person","phone","email","service_category","payment_terms","status","notes"],
  drivers:["driver_name","phone","license_no","license_expiry","branch_name","availability_status","assigned_task","notes"],
  market:["car_label","listing_title","daily_rate","currency","channel","start_date","end_date","listing_status","inquiry_phone"],
- support:["customer_name","phone","ticket_type","priority","status","opened_date","description","assigned_to","resolution"]
+ support:["customer_name","phone","ticket_type","priority","status","opened_date","description","assigned_to","resolution"],
+ assets:["car_label","acquisition_date","acquisition_cost","currency","useful_life_years","residual_value","market_value","valuation_date","sale_date","sale_price","asset_status","notes"],
+ legal_contracts:["contract_no","template_name","template_version","legal_status","signed_by","signed_at","renewal_date","penalty_terms","terms_summary","file_name","notes"],
+ procurement:["supplier_name","purchase_order_no","request_date","expected_delivery_date","received_date","item_name","category","quantity","unit_cost","total_cost","currency","status","invoice_no","notes"]
 };
 // Start with empty collections. Existing browser/cloud records are loaded separately;
  // never seed fictitious vehicles or customers into a real rental workspace.
 const initial: Record<string,Row[]> = {
  cars:[],
  customers:[],
- bookings:[],contracts:[],cash:[],cash_closings:[],maintenance:[],insurance:[],vehicle_costs:[],trackers:[],fines:[],inspections:[],audit:[],partners:[],drivers:[],market:[],support:[]
+ bookings:[],contracts:[],cash:[],cash_closings:[],maintenance:[],insurance:[],vehicle_costs:[],assets:[],legal_contracts:[],procurement:[],trackers:[],fines:[],inspections:[],audit:[],partners:[],drivers:[],market:[],support:[]
 };
 const money = (v:any) => new Intl.NumberFormat("en-US",{maximumFractionDigits:2}).format(Number(v||0));
 const contractDays = (start:string,end:string) => { if(!start||!end)return 0; const a=new Date(start+"T00:00:00Z").getTime(),b=new Date(end+"T00:00:00Z").getTime(); return Number.isFinite(a)&&Number.isFinite(b)&&b>a?Math.round((b-a)/86400000):0; };
@@ -320,7 +329,7 @@ export default function Home() {
     setRows(old=>({...old,inspections:signed}));await logAudit(editingId?"update":"create","inspections",editingId,{contract_no:form.contract_no,stage:form.stage,damage_notes:form.damage_notes});setNotice(ar?"تم حفظ فحص السيارة ومرفقاته سحابياً.":"Inspection and evidence saved to cloud.");
    }catch(err:any){if(uploadedInspectionPaths.length)await client.storage.from("arkan-private").remove(uploadedInspectionPaths);setNotice((ar?"فشل حفظ الفحص: ":"Inspection save failed: ")+(err?.message||""));}finally{setLoading(false);}
   }else if(section==="archive"&&client&&companyId){setLoading(true);let uploadedPath:string|null=null;try{let filePath=String(form.file_path||"");let fileName=String(form.file_name||"");if(archiveFile){fileName=archiveFile.name;const safeName=fileName.replace(/[^a-zA-Z0-9._-]/g,"_");uploadedPath=`${companyId}/archive/${activeBranchId}/${crypto.randomUUID()}-${safeName}`;const {error:uploadError}=await client.storage.from("arkan-private").upload(uploadedPath,archiveFile,{contentType:archiveFile.type||"application/octet-stream",upsert:false});if(uploadError)throw uploadError;filePath=uploadedPath;}const payload:any={...form,file_path:filePath||null,file_name:fileName||null};const result=editingId?await client.from("arkan_records").update({record_data:payload,updated_at:new Date().toISOString()}).eq("id",editingId).eq("company_id",companyId).eq("branch_id",activeBranchId).eq("section","archive"):await client.from("arkan_records").insert({company_id:companyId,branch_id:activeBranchId,section:"archive",record_data:payload,created_by:(await client.auth.getUser()).data.user?.id||null});if(result.error)throw result.error;const {data,error}=await client.from("arkan_records").select("id,record_data,created_at").eq("company_id",companyId).eq("branch_id",activeBranchId).eq("section","archive").order("created_at",{ascending:false});if(error)throw error;const archiveRows=await Promise.all((data||[]).map(async(x:any)=>{const signed=x.record_data.file_path?await client!.storage.from("arkan-private").createSignedUrl(x.record_data.file_path,3600):{data:null};return {...x.record_data,id:x.id,created_at:x.created_at,file_url:signed.data?.signedUrl||""};}));setRows(old=>({...old,archive:archiveRows}));await logAudit(editingId?"update":"create","archive",editingId,{document_title:payload.document_title,file_name:payload.file_name});setNotice(ar?"تم حفظ المستند ومرفقه في الأرشيف الخاص.":"Document and attachment saved to the private archive.");}catch(err:any){if(uploadedPath)await client.storage.from("arkan-private").remove([uploadedPath]);setNotice((ar?"تعذر حفظ المستند: ":"Archive save failed: ")+(err?.message||""));}finally{setLoading(false);}}
-  else if(client&&companyId&&["bookings","contracts","cash","cash_closings","maintenance","insurance","vehicle_costs","trackers","fines","incidents","employees","pricing","partners","drivers","market","support"].includes(section)){
+  else if(client&&companyId&&["bookings","contracts","legal_contracts","cash","cash_closings","maintenance","insurance","vehicle_costs","assets","procurement","trackers","fines","incidents","employees","pricing","partners","drivers","market","support"].includes(section)){
    setLoading(true);try{
     const recordData={...form};
     if(section==="bookings"||section==="contracts"){const linkedCustomer=allCustomers.find(c=>String(c.full_name||"").trim()===String(form.customer_name||"").trim());if(linkedCustomer)recordData.customer_id=linkedCustomer.id;}
@@ -373,7 +382,7 @@ export default function Home() {
    const {data:records,error:recordsError}=await sb.from("arkan_records").select("id,section,record_data,created_at").eq("company_id",company).eq("branch_id",selectedBranch.id).order("created_at",{ascending:false});if(recordsError)throw recordsError;
    const {data:auditRows,error:auditError}=await sb.from("audit_logs").select("*").eq("company_id",company).order("created_at",{ascending:false}).limit(200);if(auditError)throw auditError;
     let portalData:Row[]=[];if(["owner","admin","manager"].includes(membership.role||"")){const {data:links,error:linksError}=await sb.from("customer_portal_links").select("id,user_id,customer_id,status,created_at,reviewed_at,customer:customers(full_name,phone)").eq("company_id",company).order("created_at",{ascending:false});if(linksError)throw linksError;portalData=links||[];}setPortalLinks(portalData);
-    const synced:Record<string,Row[]>={bookings:[],contracts:[],cash:[],cash_closings:[],maintenance:[],insurance:[],vehicle_costs:[],trackers:[],fines:[],incidents:[],employees:[],pricing:[],archive:[],partners:[],drivers:[],market:[],support:[]};for(const record of records||[])if(synced[record.section])synced[record.section].push({...record.record_data,id:record.id,created_at:record.created_at});
+    const synced:Record<string,Row[]>={bookings:[],contracts:[],legal_contracts:[],cash:[],cash_closings:[],maintenance:[],insurance:[],vehicle_costs:[],assets:[],procurement:[],trackers:[],fines:[],incidents:[],employees:[],pricing:[],archive:[],partners:[],drivers:[],market:[],support:[]};for(const record of records||[])if(synced[record.section])synced[record.section].push({...record.record_data,id:record.id,created_at:record.created_at});
     synced.archive=await Promise.all(synced.archive.map(async(r:any)=>{if(!r.file_path)return r;const {data}=await sb.storage.from("arkan-private").createSignedUrl(r.file_path,3600);return {...r,file_url:data?.signedUrl||""};}));
     synced.incidents=await Promise.all(synced.incidents.map(async(r:any)=>{if(!r.file_path)return r;const {data}=await sb.storage.from("arkan-private").createSignedUrl(r.file_path,3600);return {...r,file_url:data?.signedUrl||""};}));
    setRows(old=>({...old,cars:mapped,customers:customersSigned,inspections:inspectionsSigned,audit:auditRows||[],...synced}));setNotice(ar?"تم الاتصال بالسحابة ومزامنة السيارات والعملاء والحجوزات والعقود والصندوق والصيانة والتتبع والمخالفات والفحوصات.":"Cloud connected; vehicles, customers, bookings, contracts, cash, maintenance, GPS, fines and inspections synchronized.");
