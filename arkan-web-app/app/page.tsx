@@ -120,7 +120,7 @@ export default function Home() {
  const cashTotalsLabel=(key:"income"|"expenses"|"balance")=>Object.entries(cashTotalsByCurrency).map(([currency,v])=>money(v[key])+" "+currency).join(" / ")||"0 ILS";
  const carFinancials=(rows.cars||[]).map(car=>{
   const labels=[car.plate,car.car_number,car.car_label].filter(Boolean).map((v:any)=>String(v).trim().toLowerCase());
-  const matchesCar=(r:any)=>{const label=String(r.car_label||r.plate||r.car_plate||"").trim().toLowerCase();const parts=label.split(/\\s+-\\s+/).map(x=>x.trim());return Boolean(label&&labels.some(v=>parts.includes(v)));};
+  const matchesCar=(r:any)=>{const label=String(r.car_label||r.plate||r.car_plate||"").trim().toLowerCase();const parts=label.split(/\s+-\s+/).map(x=>x.trim());return Boolean(label&&labels.some(v=>parts.includes(v)));};
   const linkedContracts=(rows.contracts||[]).filter((c:any)=>matchesCar(c));
   const contractNumbers=linkedContracts.map((c:any)=>String(c.contract_no||"").trim()).filter(Boolean);
   const incomeByCurrency:Record<string,number>={};
@@ -135,7 +135,7 @@ export default function Home() {
  });
  const monthlyFinancials=(()=>{
   const totals:Record<string,{income:number;expenses:number;currency:string}>={};
-  const add=(date:any,currency:string,key:"income"|"expenses",value:any)=>{const month=String(date||"").slice(0,7);if(!/^\\d{4}-\\d{2}$/.test(month))return;const id=month+"|"+currency;if(!totals[id])totals[id]={income:0,expenses:0,currency};totals[id][key]+=Number(value||0);};
+  const add=(date:any,currency:string,key:"income"|"expenses",value:any)=>{const month=String(date||"").slice(0,7);if(!/^\d{4}-\d{2}$/.test(month))return;const id=month+"|"+currency;if(!totals[id])totals[id]={income:0,expenses:0,currency};totals[id][key]+=Number(value||0);};
   (rows.cash||[]).forEach(r=>{if(["قبض","Receipt"].includes(r.kind))add(r.transaction_date||r.created_at,currencyOf(r),"income",r.amount);});
   (rows.maintenance||[]).forEach(r=>add(r.service_date||r.created_at,currencyOf(r),"expenses",r.cost));
   (rows.insurance||[]).forEach(r=>add(r.start_date||r.created_at,currencyOf(r),"expenses",r.premium));
