@@ -145,3 +145,19 @@
 .owner-request-form{display:grid;gap:9px;margin-top:15px;padding-top:14px;border-top:1px solid #edf0f4}.owner-request-form h4{margin:0;font-size:12px}.owner-form-row{display:grid;grid-template-columns:1.2fr 1fr .7fr;gap:7px}.owner-request-form input,.owner-request-form select,.owner-request-form textarea{min-width:0;width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#344054;font:inherit;font-size:10px}.owner-request-form textarea{min-height:72px;resize:vertical}.owner-request-form>button{justify-self:start;padding:9px 13px;border:0;border-radius:8px;background:#14253d;color:#fff;font-size:10px;cursor:pointer}.owner-request-form>button:disabled{opacity:.5}
 @media(max-width:1000px){.owner-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.owner-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.owner-hero{align-items:flex-start;flex-direction:column;padding:18px}.owner-hero h2{font-size:20px}.owner-shield{width:100%;grid-template-columns:auto 1fr;justify-items:start;align-items:center}.owner-shield small{grid-column:2}.owner-panel{padding:13px}.owner-form-row{grid-template-columns:1fr 1fr}.owner-form-row select:last-child{grid-column:1/-1}.owner-approvals>div{flex-wrap:wrap}.owner-actions{width:100%;padding-inline-start:39px}.owner-financial>div{grid-template-columns:45px repeat(3,minmax(0,1fr));gap:4px}.owner-financial strong{font-size:9px}}
+
+/* ARKAN Fleet Intelligence */
+.fleet-intelligence .fleet-utilization-list{display:grid;gap:15px}
+.fleet-intelligence .fleet-utilization-row{display:grid;grid-template-columns:minmax(130px,1.1fr) minmax(90px,2fr) 48px 100px;align-items:center;gap:13px}
+.fleet-intelligence .fleet-utilization-name{display:grid;gap:4px;min-width:0}
+.fleet-intelligence .fleet-utilization-name b{font-size:13px;overflow-wrap:anywhere}
+.fleet-intelligence .fleet-utilization-name small,.fleet-intelligence .fleet-utilization-row>small{font-size:11px;color:var(--muted)}
+.fleet-intelligence .fleet-utilization-track{height:10px;border-radius:20px;background:#edf1f6;overflow:hidden}
+.fleet-intelligence .fleet-utilization-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#c9a45c,#e4c98d)}
+.fleet-intelligence .fleet-utilization-row>strong{font:700 13px Inter,sans-serif}
+.fleet-intelligence .fleet-intelligence-footnote{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font-size:12px;line-height:1.7}
+.fleet-intelligence .fleet-intelligence-footnote>svg{flex-shrink:0;color:var(--gold);margin-top:2px}
+.fleet-intelligence .fleet-intelligence-footnote b{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#b45335}
+.fleet-intelligence .fleet-period-note{margin:10px 2px;color:var(--muted);font-size:11px}
+@media(max-width:900px){.fleet-intelligence .fleet-intelligence-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.fleet-intelligence .page-heading{align-items:flex-start;gap:12px;flex-direction:column}.fleet-intelligence .fleet-utilization-row{grid-template-columns:minmax(0,1fr) 44px;gap:7px}.fleet-intelligence .fleet-utilization-track{grid-column:1;grid-row:2}.fleet-intelligence .fleet-utilization-row>strong{grid-column:2;grid-row:1}.fleet-intelligence .fleet-utilization-row>small{grid-column:1/-1}.fleet-intelligence .fleet-intelligence-footnote{flex-wrap:wrap}.fleet-intelligence .fleet-intelligence-footnote b{white-space:normal}}
