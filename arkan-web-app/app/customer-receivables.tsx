@@ -33,7 +33,15 @@ export default function CustomerReceivables({ar,contracts,cash,customers,onRecor
   return Array.from(byCustomer.values()).map(g=>({...g,contracts:g.contracts.sort((a:any,b:any)=>String(a.end_date||"").localeCompare(String(b.end_date||""))),overdue:g.contracts.some((c:any)=>{const days=dayDiff(c.end_date);return days!==null&&days>0;})})).sort((a,b)=>Number(b.overdue)-Number(a.overdue)||a.name.localeCompare(b.name));
  },[contracts,cash,customers,ar]);
  const filtered=rows.filter(g=>(filter==="all"||(filter==="overdue"&&g.overdue)||(filter==="open"&&!g.overdue))&&[g.name,g.phone,...g.contracts.map((c:any)=>c.contract_no+" "+c.car_label)].join(" ").toLowerCase().includes(search.toLowerCase()));
- const totals=rows.reduce((acc,g)=>{Object.entries(g.totals).forEach(([c,v]:any)=>{if(!acc[c])acc[c]={total:0,paid:0,outstanding:0};acc[c].total+=v.total;acc[c].paid+=v.paid;acc[c].outstanding+=v.outstanding;});return acc;},{ } as Record<string,{total:number;paid:number;outstanding:number}>);
+  const totals = rows.reduce<Record<string, { total: number; paid: number; outstanding: number }>>((acc, g) => {
+    Object.entries(g.totals as Record<string, { total: number; paid: number; outstanding: number }>).forEach(([currency, value]) => {
+      if (!acc[currency]) acc[currency] = { total: 0, paid: 0, outstanding: 0 };
+      acc[currency].total += value.total;
+      acc[currency].paid += value.paid;
+      acc[currency].outstanding += value.outstanding;
+    });
+    return acc;
+  }, {});
  const t=(a:string,e:string)=>ar?a:e;
  return <div className="receivables-workspace">
   <div className="page-heading"><div><span className="eyebrow">{t("متابعة التحصيل","COLLECTION MANAGEMENT")}</span><h2>{t("كشف حساب العملاء والديون","Customer receivables ledger")}</h2><p>{t("تجميع أرصدة العقود المفتوحة حسب العميل، مع فصل العملات وإظهار العقود التي تجاوزت تاريخ نهايتها.", "Customer-level balances across open contracts, with currencies separated and contracts past their end date highlighted.")}</p></div></div>
