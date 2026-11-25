@@ -171,6 +171,16 @@ export default function Home() {
    if(age<24||tenure<2||(tenure===2&&(now.getMonth()<issue.getMonth()||(now.getMonth()===issue.getMonth()&&now.getDate()<=issue.getDate())))||!customer.license_expiry_date||expiry<new Date(now.getFullYear(),now.getMonth(),now.getDate())){
     setNotice(ar?"مرفوض: لا يمكن إنشاء حجز أو عقد؛ تحقق من العمر وصلاحية الرخصة ومدة امتلاكها.":"Rejected: booking/contract blocked. Check age, licence validity and holding period.");return;
    }
+   const startTime=new Date(String(form.start_date||"")+"T00:00:00").getTime(),endTime=new Date(String(form.end_date||"")+"T00:00:00").getTime();
+   if(!Number.isFinite(startTime)||!Number.isFinite(endTime)||endTime<=startTime){setNotice(ar?"أدخل تاريخ بداية ونهاية صحيحين، ويجب أن يكون تاريخ النهاية بعد البداية.":"Enter valid start and end dates; the end date must be after the start date.");return;}
+   const selectedCar=(rows.cars||[]).find(c=>[c.car_number,c.plate,c.make,c.model].filter(Boolean).join(" - ")===String(form.car_label||""));
+   if(!selectedCar){setNotice(ar?"اختر سيارة مسجلة من القائمة قبل حفظ الحجز أو العقد.":"Select a registered vehicle before saving the booking or contract.");return;}
+   const vehicleIds=[selectedCar.car_number,selectedCar.plate].filter(Boolean).map((v:any)=>String(v).trim().toLowerCase());
+   const matchesSelectedCar=(r:any)=>{const parts=String(r.car_label||r.plate||r.car_plate||"").split(/\s+-\s+/).map((v:string)=>v.trim().toLowerCase());return vehicleIds.some(id=>parts.includes(id));};
+   const inactive=["cancelled","canceled","ملغي","مرفوض","منتهي","returned","مكتمل","مغلق"];
+   const conflicts=[...(rows.bookings||[]),...(rows.contracts||[])].filter(r=>r.id!==editingId&&matchesSelectedCar(r)&&!inactive.includes(String(r.status||"").trim().toLowerCase()));
+   const overlap=conflicts.find(r=>{const oldStart=new Date(String(r.start_date||"")+"T00:00:00").getTime(),oldEnd=new Date(String(r.end_date||"")+"T00:00:00").getTime();return Number.isFinite(oldStart)&&Number.isFinite(oldEnd)&&startTime<oldEnd&&endTime>oldStart;});
+   if(overlap){setNotice(ar?"هذه السيارة مرتبطة بحجز أو عقد آخر خلال المدة المحددة. اختر سيارة أخرى أو غيّر التواريخ.":"This vehicle already has a booking or contract during the selected dates. Choose another vehicle or change the dates.");return;}
   }
   if(section==="cars"&&client&&companyId){
    setLoading(true);try{const id=editingId||crypto.randomUUID();let image_path=form.image_path||null;let gallery_paths:string[]=[...(form.gallery_paths?JSON.parse(form.gallery_paths):[])];for(const [idx,dataUrl] of (form.new_gallery||[]).entries()){const blob=await(await fetch(String(dataUrl))).blob();const path=`${companyId}/cars/${id}/gallery-${Date.now()}-${idx}.jpg`;const {error}=await client.storage.from("arkan-private").upload(path,blob,{contentType:"image/jpeg",upsert:true});if(error)throw error;gallery_paths.push(path);}
