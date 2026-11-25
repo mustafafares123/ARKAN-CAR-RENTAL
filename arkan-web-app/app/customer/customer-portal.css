@@ -1,0 +1,40 @@
+/* ARKAN customer portal — premium customer-facing visual layer */
+.portal{background:#f3f5f8!important;color:#1d2939}
+.portal .cp-shell{max-width:1380px;padding:22px 30px 44px}
+.portal .cp-header{border-radius:18px;padding:17px 23px;background:linear-gradient(112deg,#0e1b2d,#1b3452 68%,#294361);box-shadow:0 12px 32px #14253d18}
+.portal .cp-mark{border-radius:12px;background:#ffffff0b}
+.portal .cp-hero{position:relative;isolation:isolate;overflow:hidden;min-height:260px;margin:22px 0 24px;padding:40px 42px;border-radius:24px;background:radial-gradient(circle at 8% 100%,#c9a45c26,transparent 34%),linear-gradient(112deg,#101d30 0%,#1b3452 62%,#294361 100%);align-items:center;box-shadow:0 18px 42px #14253d20}
+.portal .cp-hero:after{content:"";position:absolute;z-index:-1;width:380px;height:380px;border:1px solid #c9a45c30;border-radius:50%;inset-inline-end:3%;top:-250px;box-shadow:0 0 0 34px #c9a45c0a,0 0 0 72px #c9a45c08,0 0 0 112px #c9a45c06;pointer-events:none}
+.portal .cp-kicker{color:#e0bd78;letter-spacing:1.4px}
+.portal .cp-hero h1{color:#fff;font-size:clamp(30px,4vw,46px);margin:13px 0 10px;letter-spacing:-.5px}
+.portal .cp-hero p{color:#d2dbe6;max-width:640px;font-size:14px}
+.portal .cp-hero-art{background:#ffffff12;border:1px solid #ffffff2a;color:#f1d99f;border-radius:12px;padding:13px 17px;backdrop-filter:blur(8px)}
+.portal .cp-layout{grid-template-columns:minmax(0,1fr) 350px;gap:22px}
+.portal .cp-side{position:sticky;top:18px}
+.portal .cp-panel{border-radius:16px;border-color:#e5e9ef;box-shadow:0 8px 24px #14253d08}
+.portal .cp-nav{gap:7px;padding:6px;background:#e9edf2;border:1px solid #e3e8ee;border-radius:13px}
+.portal .cp-nav button{border:0;background:transparent;border-radius:9px;padding:12px 17px}
+.portal .cp-nav button.active{background:#14253d;box-shadow:0 4px 12px #14253d22}
+.portal .cp-panel-title h2{font-size:19px}
+.portal .cp-grid{grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px}
+.portal .cp-card{border-radius:15px;border-color:#e5e9ef;box-shadow:0 5px 18px #14253d07}
+.portal .cp-card:hover{transform:translateY(-4px);box-shadow:0 16px 32px #14253d14;border-color:#d7c49d}
+.portal .cp-photo{height:215px;background:linear-gradient(135deg,#e8edf3,#f7f8fa)}
+.portal .cp-photo img{transition:transform .45s}
+.portal .cp-card:hover .cp-photo img{transform:scale(1.035)}
+.portal .cp-photo-label{top:13px;inset-inline-start:13px;padding:6px 11px;box-shadow:0 3px 10px #14253d12}
+.portal .cp-cardbody{padding:18px}
+.portal .cp-car-title{font-size:18px}
+.portal .cp-specs{gap:7px;margin:15px 0}
+.portal .cp-spec{padding:7px 9px;border:1px solid #edf0f4;background:#f8f9fb;border-radius:8px;font-size:11px}
+.portal .cp-price{font-size:23px}
+.portal .cp-btn{border-radius:9px}
+.portal .cp-dark{background:#14253d}
+.portal .cp-input{border-radius:9px;background:#fff}
+.portal .cp-auth-actions{grid-template-columns:1fr}
+.portal .cp-feature-icon{border-radius:9px}
+.portal .cp-footer{padding-top:34px}
+.portal button:focus-visible,.portal input:focus-visible{outline:3px solid #c9a45c66;outline-offset:2px}
+@media(max-width:950px){.portal .cp-layout{grid-template-columns:1fr}.portal .cp-side{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.portal .cp-shell{padding:10px 12px 28px}.portal .cp-header{padding:13px 15px}.portal .cp-hero{min-height:0;margin:14px 0 17px;padding:27px 22px;border-radius:17px}.portal .cp-hero h1{font-size:29px}.portal .cp-hero-art{margin-top:18px}.portal .cp-layout{gap:15px}.portal .cp-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.portal .cp-nav button{justify-content:center;padding:10px 5px;font-size:11px;gap:5px}.portal .cp-panel{padding:15px}.portal .cp-grid{grid-template-columns:1fr;gap:13px}.portal .cp-photo{height:205px}.portal .cp-side{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.portal .cp-card,.portal .cp-photo img,.portal .cp-btn{transition:none!important}}
