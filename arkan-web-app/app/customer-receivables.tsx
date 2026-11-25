@@ -9,7 +9,7 @@ const n = (v: any) => { const x = Number(v ?? 0); return Number.isFinite(x) ? x 
 const fmt = (v: number) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(v);
 const cur = (v: any) => { const s=String(v||"ILS").trim().toUpperCase(); if(["₪","NIS","ILS","شيكل"].includes(s))return "ILS";if(["$","USD","US$","دولار"].includes(s))return "USD";if(["JOD","دينار"].includes(s))return "JOD";if(["EUR","€","يورو"].includes(s))return "EUR";return s; };
 const isReceipt = (v: any) => ["قبض","receipt","income","received"].includes(String(v||"").trim().toLowerCase());
-const dayDiff = (date: any) => { const d=String(date||"").slice(0,10); if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(d))return null;const a=new Date(d+"T00:00:00").getTime(),b=new Date();b.setHours(0,0,0,0);return Math.floor((b.getTime()-a)/86400000); };
+const dayDiff = (date: any) => { const d=String(date||"").slice(0,10); if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;const a=new Date(d+"T00:00:00").getTime(),b=new Date();b.setHours(0,0,0,0);return Math.floor((b.getTime()-a)/86400000); };
 
 export default function CustomerReceivables({ar,contracts,cash,customers,onRecordPayment}:Props){
  const [search,setSearch]=useState(""); const [filter,setFilter]=useState("all"); const [expanded,setExpanded]=useState("");
