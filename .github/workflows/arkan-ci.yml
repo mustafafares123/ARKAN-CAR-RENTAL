@@ -1,15 +1,10 @@
-name: ARKAN build verification
+name: ARKAN manual build verification
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "arkan-web-app/**"
-      - ".github/workflows/arkan-ci.yml"
-  pull_request:
-    paths:
-      - "arkan-web-app/**"
-      - ".github/workflows/arkan-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -18,13 +13,13 @@ jobs:
       run:
         working-directory: arkan-web-app
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: Install dependencies
-        run: npm install
-      - name: Build Next.js app
+        run: npm install --no-audit --no-fund
+      - name: Check TypeScript
+        run: npm run typecheck
+      - name: Build Next.js application
         run: npm run build
