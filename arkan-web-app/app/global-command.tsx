@@ -27,7 +27,7 @@ export default function GlobalCommand({
   ar, cars, customers, contracts, cash, cashClosings, maintenance,
   inspections, incidents, fines, debts, alerts, branches, activeBranchId, onOpen
 }: Props) {
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();\n  const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
   const activeContracts = contracts.filter(row => !completed(row.status));
   const overdueContracts = activeContracts.filter(row => dateKey(row.end_date) && dateKey(row.end_date) < today);
   const unavailableCars = cars.filter(row => ["maintenance", "صيانة", "inactive", "غير نشطة"].includes(norm(row.status)));
@@ -42,7 +42,7 @@ export default function GlobalCommand({
   const cashVariance = cashClosings.filter(row => norm(row.status) === "difference" || Math.abs(Number(row.difference || 0)) >= 0.01);
   const overlappingContracts = activeContracts.filter((left, index) => activeContracts.slice(index + 1).some(right => {
     const leftCar = norm(left.car_label); const rightCar = norm(right.car_label);
-    return leftCar && leftCar === rightCar && dateKey(left.start_date) && dateKey(left.end_date) && dateKey(right.start_date) && dateKey(right.end_date) && dateKey(left.start_date) <= dateKey(right.end_date) && dateKey(right.start_date) <= dateKey(left.end_date);
+    return leftCar && leftCar === rightCar && dateKey(left.start_date) && dateKey(left.end_date) && dateKey(right.start_date) && dateKey(right.end_date) && dateKey(left.start_date) < dateKey(right.end_date) && dateKey(right.start_date) < dateKey(left.end_date);
   }));
   const overdueAlerts = alerts.filter(row => Number(row.days) < 0);
   const expiringAlerts = alerts.filter(row => row.days !== null && Number(row.days) >= 0 && Number(row.days) <= 7);
