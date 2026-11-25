@@ -54,7 +54,6 @@ export default function CarProfitability({ ar, cars, contracts, cash, maintenanc
     };
     const carContracts = contracts.filter(r => matches(r));
     const contractNumbers = new Set(carContracts.map(r => String(r.contract_no || "").trim()).filter(Boolean));
-    const revenue: Record<string, number> = {};
     const collected: Record<string, number> = {};
     const costs: Record<string, { maintenance: number; insurance: number; registration: number }> = {};
     const add = (target: Record<string, number>, cur: string, value: any) => { target[cur] = (target[cur] || 0) + amount(value); };
@@ -73,7 +72,7 @@ export default function CarProfitability({ ar, cars, contracts, cash, maintenanc
     maintenance.forEach(r => addCost("maintenance", r, ["service_date", "created_at"], r.cost));
     insurance.forEach(r => addCost("insurance", r, ["start_date", "created_at"], r.premium));
     vehicleCosts.forEach(r => addCost("registration", r, ["due_date", "created_at"], r.amount));
-    const currencies = Array.from(new Set([...Object.keys(revenue), ...Object.keys(collected), ...Object.keys(costs)]));
+    const currencies = Array.from(new Set([...Object.keys(collected), ...Object.keys(costs)]));
     return {
       id: car.id,
       name: [car.make, car.model].filter(Boolean).join(" ") || car.car_number || car.plate || (ar ? "سيارة" : "Vehicle"),
