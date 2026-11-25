@@ -49,3 +49,12 @@
  .print-grid{break-inside:avoid}
  .print-terms,.print-signatures{break-inside:avoid}
 }
+
+
+.top-actions select.language-btn{appearance:auto;min-width:118px;max-width:180px;border:1px solid rgba(201,164,92,.4);background:#fff;color:#14253d;padding:9px 12px;border-radius:9px;font:inherit;font-size:12px}
+.alert-count{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;margin-inline-start:5px;padding:0 4px;border-radius:20px;background:#c44949;color:#fff;font-size:10px;font-weight:800}
+.alert-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid #edf0f4;font-size:13px}
+.alert-row:last-child{border-bottom:0}
+.alert-row b{font-size:12px;color:#526176;white-space:nowrap}
+.alert-row small{font-size:11px;color:#b87918;white-space:nowrap}
+.loyalty-tier{display:inline-flex;align-items:center;padding:5px 10px;border-radius:30px;background:#f7f2e8;color:#8d6b31;font-size:11px;font-weight:700}
