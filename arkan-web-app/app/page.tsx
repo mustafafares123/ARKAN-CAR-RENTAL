@@ -63,7 +63,11 @@ const LABELS: Record<string,string[]> = {
  employees:["اسم الموظف","البريد الإلكتروني","نوع العمولة","نسبة العمولة %","قيمة العمولة","العملة","رقم العقد","حالة الدفع","ملاحظات"],
  pricing:["السيارة","السعر الأساسي","السعر المقترح","مستوى الطلب","تاريخ التطبيق المقترح","حالة الاعتماد","سبب الاقتراح"],
  archive:["عنوان المستند","نوع المستند","السيارة المرتبطة","العميل المرتبط","تاريخ المستند","تاريخ الانتهاء","اسم الملف","ملاحظات"],
- alerts:["التنبيه","التاريخ","الأيام المتبقية","الأولوية","القسم"]
+ alerts:["التنبيه","التاريخ","الأيام المتبقية","الأولوية","القسم"],
+ partners:["اسم الشريك / المورد","نوع الشريك","الشخص المسؤول","الهاتف","البريد الإلكتروني","نوع الخدمة","شروط الدفع","الحالة","ملاحظات"],
+ drivers:["اسم السائق","رقم الهاتف","رقم الرخصة","انتهاء الرخصة","الفرع","حالة التوفر","المهمة الحالية","ملاحظات"],
+ market:["السيارة","عنوان العرض","السعر اليومي","العملة","قناة الإعلان","تاريخ البداية","تاريخ النهاية","حالة العرض","هاتف الاستفسار"],
+ support:["اسم العميل","الهاتف","نوع الطلب","الأولوية","الحالة","تاريخ الفتح","وصف المشكلة","الموظف المسؤول","الحل / الإجراء"]
 };
 const INSURANCE_COMPANIES=["شركة المشرق للتأمين","شركة فلسطين للتأمين","شركة التأمين الوطنية","شركة ترست العالمية للتأمين","شركة المجموعة الأهلية للتأمين","شركة التكافل الفلسطينية للتأمين","شركة العالمية المتحدة للتأمين","شركة تمكين الفلسطينية للتأمين","شركة البركة للتأمين الإسلامي","شركة الأراضي المقدسة للتأمين التكافلي","شركة أخرى"];
 const INSURANCE_TYPES=["تأمين فريق ثالث","فريق ثالث مع شامل","تأمين شامل"];
@@ -87,7 +91,11 @@ const FIELDS: Record<string,string[]> = {
  employees:["employee_name","employee_email","commission_type","commission_rate","commission_amount","currency","contract_no","payment_status","notes"],
  pricing:["car_label","base_rate","suggested_rate","demand_level","effective_from","approval_status","reason"],
  archive:["document_title","document_type","related_car","related_customer","document_date","expiry_date","file_name","notes"],
- alerts:["title","date","days","priority","kind"]
+ alerts:["title","date","days","priority","kind"],
+ partners:["partner_name","partner_type","contact_person","phone","email","service_category","payment_terms","status","notes"],
+ drivers:["driver_name","phone","license_no","license_expiry","branch_name","availability_status","assigned_task","notes"],
+ market:["car_label","listing_title","daily_rate","currency","channel","start_date","end_date","listing_status","inquiry_phone"],
+ support:["customer_name","phone","ticket_type","priority","status","opened_date","description","assigned_to","resolution"]
 };
 // Start with empty collections. Existing browser/cloud records are loaded separately;
  // never seed fictitious vehicles or customers into a real rental workspace.
