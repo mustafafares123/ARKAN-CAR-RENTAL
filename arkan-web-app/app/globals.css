@@ -114,3 +114,50 @@
 .gc-disclaimer{display:flex;align-items:flex-start;gap:9px;padding:12px 14px;border:1px solid #f0e4cc;border-radius:10px;background:#fff9ee;color:#866b3e;font-size:10px;line-height:1.8}.gc-disclaimer svg{flex-shrink:0;margin-top:2px}
 @media(max-width:900px){.gc-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gc-grid,.gc-bottom{grid-template-columns:1fr}}
 @media(max-width:600px){.gc-hero{align-items:flex-start;flex-direction:column;padding:18px}.gc-hero h2{font-size:20px}.gc-context{width:100%;grid-template-columns:1fr auto;align-items:center;text-align:start}.gc-metrics{gap:8px}.gc-metric{padding:10px;gap:8px}.gc-icon{width:32px;height:32px}.gc-metric strong{font-size:18px}.gc-panel{padding:14px}.gc-modules{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* ARKAN 360 owner command center */
+.owner-command{display:grid;gap:16px;max-width:100%}
+.owner-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:23px 25px;border-radius:15px;background:linear-gradient(120deg,#14253d,#1d3555);color:#fff}
+.owner-eyebrow{font:700 10px Inter,sans-serif;letter-spacing:1.5px;color:#c9a45c}
+.owner-hero h2{margin:7px 0 5px;font-size:23px}.owner-hero p{margin:0;color:#d0d9e5;font-size:12px;line-height:1.8}
+.owner-shield{display:grid;justify-items:center;gap:6px;min-width:150px;padding:14px;border:1px solid #ffffff35;border-radius:11px;color:#e8d3a5}.owner-shield b{font-size:11px}.owner-shield small{font-size:9px;color:#d0d9e5}
+.owner-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.owner-metrics>button{display:grid;justify-items:start;gap:6px;padding:14px;border:1px solid var(--line);border-radius:11px;background:#fff;text-align:start;cursor:pointer;color:#344054}
+.owner-metrics>button:hover{border-color:#c9a45c}.owner-metrics>button>span{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#f7f2e7;color:#9b793e}.owner-metrics svg{width:18px}.owner-metrics small{font-size:10px;color:var(--muted)}.owner-metrics strong{font:700 23px Inter,sans-serif;color:#1d2939}.owner-metrics em{font-style:normal;font-size:9px;color:#8995a5}
+.owner-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.owner-panel{min-width:0;padding:17px;background:#fff;border:1px solid var(--line);border-radius:13px}
+.owner-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.owner-panel-head h3{display:flex;align-items:center;gap:7px;margin:0 0 4px;font-size:14px}.owner-panel-head h3 svg{color:#a17c39}.owner-panel-head p{margin:0;color:var(--muted);font-size:10px;line-height:1.7}
+.owner-tag{padding:5px 8px;border-radius:20px;background:#f7f2e7;color:#95733a;font-size:9px}
+.owner-suggestions{display:grid}.owner-suggestions>button,.owner-finding{display:flex;align-items:center;gap:10px;width:100%;padding:11px 2px;border:0;border-bottom:1px solid #edf0f4;background:transparent;text-align:start}
+.owner-suggestions>button{cursor:pointer}.owner-suggestions>button>span:nth-child(2),.owner-finding>span:nth-child(2){display:grid;gap:4px;flex:1;min-width:0}
+.owner-suggestions b,.owner-finding b{font-size:11px;color:#344054}.owner-suggestions small,.owner-finding small{font-size:9px;color:#8995a5;line-height:1.7;overflow-wrap:anywhere}
+.owner-suggestions em{font-style:normal;font-size:9px;color:#a17c39;white-space:nowrap}
+.owner-severity{display:grid;place-items:center;width:30px;height:30px;flex-shrink:0;border-radius:8px;background:#fff4e5;color:#b7791f}.owner-severity.high,.owner-severity.critical{background:#fff0ef;color:#c44949}.owner-severity.low{background:#eef6f0;color:#39815b}
+.owner-empty{display:flex;align-items:center;gap:9px;min-height:88px;color:#6e7d8e;font-size:10px;line-height:1.8}.owner-empty svg{width:19px;flex-shrink:0;color:#39815b}
+.owner-disclaimer{margin:11px 0 0;padding:10px 11px;border-radius:8px;background:#fff9ee;color:#866b3e;font-size:9px;line-height:1.8}
+.owner-financial{display:grid;gap:9px}.owner-financial>div{display:grid;grid-template-columns:55px repeat(3,minmax(0,1fr));gap:7px;padding:10px;border:1px solid #edf0f4;border-radius:9px}.owner-financial b{font:700 11px Inter,sans-serif;color:#9b793e}.owner-financial span{display:grid;gap:4px;color:#8995a5;font-size:9px}.owner-financial strong{font:700 11px Inter,sans-serif;color:#344054}
+.owner-link{margin-top:12px;padding:0;border:0;background:none;color:#99753b;font-size:10px;cursor:pointer}
+.owner-approvals{display:grid;max-height:340px;overflow:auto}.owner-approvals>div{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid #edf0f4}.owner-approvals>div>span:first-child{display:grid;gap:4px;flex:1;min-width:0}.owner-approvals small{font-size:9px;color:#8995a5;line-height:1.6;overflow-wrap:anywhere}.owner-approvals b{font-size:10px;color:#344054}
+.owner-status{padding:5px 7px;border-radius:20px;background:#fff4e5;color:#a66d1f;font-size:9px;white-space:nowrap}.owner-status.approved{background:#eaf5ef;color:#28744f}.owner-status.rejected{background:#fff0ef;color:#b54735}
+.owner-actions{display:flex;gap:5px}.owner-actions button{display:flex;align-items:center;gap:4px;padding:6px 8px;border:1px solid #e4e9ef;border-radius:7px;background:#fff;color:#526174;font-size:9px;cursor:pointer}.owner-actions button:disabled{opacity:.5}
+.owner-request-form{display:grid;gap:9px;margin-top:15px;padding-top:14px;border-top:1px solid #edf0f4}.owner-request-form h4{margin:0;font-size:12px}.owner-form-row{display:grid;grid-template-columns:1.2fr 1fr .7fr;gap:7px}.owner-request-form input,.owner-request-form select,.owner-request-form textarea{min-width:0;width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#344054;font:inherit;font-size:10px}.owner-request-form textarea{min-height:72px;resize:vertical}.owner-request-form>button{justify-self:start;padding:9px 13px;border:0;border-radius:8px;background:#14253d;color:#fff;font-size:10px;cursor:pointer}.owner-request-form>button:disabled{opacity:.5}
+@media(max-width:1000px){.owner-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.owner-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.owner-hero{align-items:flex-start;flex-direction:column;padding:18px}.owner-hero h2{font-size:20px}.owner-shield{width:100%;grid-template-columns:auto 1fr;justify-items:start;align-items:center}.owner-shield small{grid-column:2}.owner-panel{padding:13px}.owner-form-row{grid-template-columns:1fr 1fr}.owner-form-row select:last-child{grid-column:1/-1}.owner-approvals>div{flex-wrap:wrap}.owner-actions{width:100%;padding-inline-start:39px}.owner-financial>div{grid-template-columns:45px repeat(3,minmax(0,1fr));gap:4px}.owner-financial strong{font-size:9px}}
+
+/* ARKAN Fleet Intelligence */
+.fleet-intelligence .fleet-utilization-list{display:grid;gap:15px}
+.fleet-intelligence .fleet-utilization-row{display:grid;grid-template-columns:minmax(130px,1.1fr) minmax(90px,2fr) 48px 100px;align-items:center;gap:13px}
+.fleet-intelligence .fleet-utilization-name{display:grid;gap:4px;min-width:0}
+.fleet-intelligence .fleet-utilization-name b{font-size:13px;overflow-wrap:anywhere}
+.fleet-intelligence .fleet-utilization-name small,.fleet-intelligence .fleet-utilization-row>small{font-size:11px;color:var(--muted)}
+.fleet-intelligence .fleet-utilization-track{height:10px;border-radius:20px;background:#edf1f6;overflow:hidden}
+.fleet-intelligence .fleet-utilization-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#c9a45c,#e4c98d)}
+.fleet-intelligence .fleet-utilization-row>strong{font:700 13px Inter,sans-serif}
+.fleet-intelligence .fleet-intelligence-footnote{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font-size:12px;line-height:1.7}
+.fleet-intelligence .fleet-intelligence-footnote>svg{flex-shrink:0;color:var(--gold);margin-top:2px}
+.fleet-intelligence .fleet-intelligence-footnote b{display:flex;align-items:center;gap:5px;white-space:nowrap;color:#b45335}
+.fleet-intelligence .fleet-period-note{margin:10px 2px;color:var(--muted);font-size:11px}
+@media(max-width:900px){.fleet-intelligence .fleet-intelligence-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.fleet-intelligence .page-heading{align-items:flex-start;gap:12px;flex-direction:column}.fleet-intelligence .fleet-utilization-row{grid-template-columns:minmax(0,1fr) 44px;gap:7px}.fleet-intelligence .fleet-utilization-track{grid-column:1;grid-row:2}.fleet-intelligence .fleet-utilization-row>strong{grid-column:2;grid-row:1}.fleet-intelligence .fleet-utilization-row>small{grid-column:1/-1}.fleet-intelligence .fleet-intelligence-footnote{flex-wrap:wrap}.fleet-intelligence .fleet-intelligence-footnote b{white-space:normal}}
