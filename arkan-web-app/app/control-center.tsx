@@ -31,8 +31,17 @@ export default function ControlCenter({ ar, cars, customers, bookings, contracts
   const openIncidents = incidents.filter((r) => !["closed", "resolved", "مغلق", "تمت المعالجة"].includes(String(r.incident_status || "").toLowerCase()));
   const unpaidFines = fines.filter((r) => !["paid", "collected", "مدفوعة", "محصلة", "مغلق"].includes(String(r.collection_status || "").toLowerCase()));
   const monthCash = cash.filter((r) => String(r.transaction_date || r.created_at || "").slice(0, 7) === monthText);
-  const receipts = monthCash.filter((r) => cashKind(r.kind) === "receipt").reduce((sum, r) => sum + Number(r.amount || 0), 0);
-  const cashExpenses = monthCash.filter((r) => cashKind(r.kind) === "expense").reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  const cashByCurrency = monthCash.reduce<Record<string, { receipts: number; expenses: number }>>((acc, row) => {
+    const kind = cashKind(row.kind);
+    if (kind === "unknown") return acc;
+    const currency = String(row.currency || "ILS").trim().toUpperCase() || "ILS";
+    if (!acc[currency]) acc[currency] = { receipts: 0, expenses: 0 };
+    acc[currency][kind === "receipt" ? "receipts" : "expenses"] += Number(row.amount || 0);
+    return acc;
+  }, {});
+  const cashSummary = (key: "receipts" | "expenses" | "net") => Object.entries(cashByCurrency)
+    .map(([currency, values]) => amount(key === "net" ? values.receipts - values.expenses : values[key]) + " " + currency)
+    .join(" / ") || "0 ILS";
   const unknownCash = monthCash.filter((r) => cashKind(r.kind) === "unknown").length;
   const categorizedCosts = [
     ...maintenance.filter((r) => String(r.service_date || r.created_at || "").slice(0, 7) === monthText).map((r) => ({ amount: r.cost, currency: r.currency || "ILS" })),
@@ -72,7 +81,7 @@ export default function ControlCenter({ ar, cars, customers, bookings, contracts
     </div>
     <div className="cc-two-columns">
       <div className="cc-panel"><div className="cc-panel-head"><div><h3>{ar ? "حركة الصندوق هذا الشهر" : "Cash movement this month"}</h3><p>{monthText}</p></div><Wallet size={20}/></div>
-        <div className="cc-finance-grid"><div><small>{ar ? "المقبوضات" : "Receipts"}</small><strong>{amount(receipts)}</strong></div><div><small>{ar ? "المدفوعات" : "Payments"}</small><strong>{amount(cashExpenses)}</strong></div><div className="cc-net"><small>{ar ? "صافي حركة الصندوق" : "Net cash movement"}</small><strong>{amount(receipts - cashExpenses)}</strong></div></div>
+        <div className="cc-finance-grid"><div><small>{ar ? "المقبوضات" : "Receipts"}</small><strong>{cashSummary("receipts")}</strong></div><div><small>{ar ? "المدفوعات" : "Payments"}</small><strong>{cashSummary("expenses")}</strong></div><div className="cc-net"><small>{ar ? "صافي حركة الصندوق" : "Net cash movement"}</small><strong>{cashSummary("net")}</div></div>
         <p className="cc-footnote">{ar ? "الأرقام حسب حركات الصندوق المسجلة فقط، ولا يتم جمع عملات مختلفة في إجمالي واحد." : "Based only on recorded cash transactions. Different currencies are not combined into one total."}</p>
         {unknownCash > 0 && <p className="cc-warning"><AlertTriangle size={15}/>{ar ? String(unknownCash) + " حركة هذا الشهر تحتاج تصنيف قبض أو صرف." : String(unknownCash) + " transactions this month need a receipt/expense classification."}</p>}
         <button type="button" className="cc-link" onClick={() => onOpen("cash")}>{ar ? "فتح الصندوق ←" : "Open cashbox →"}</button>
