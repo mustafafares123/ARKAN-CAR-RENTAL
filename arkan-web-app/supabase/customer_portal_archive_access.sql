@@ -30,6 +30,9 @@ using (
   )
 );
 
+-- This public catalog RPC is not used by the current portal; keep its car/plate listing private.
+revoke execute on function public.customer_portal_catalog() from public, anon, authenticated;
+
 -- Keep the bucket private and preserve the current 10 MB limit.
 -- Existing image types remain allowed; PDF and office document types are added for the archive.
 update storage.buckets
