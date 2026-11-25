@@ -46,6 +46,9 @@ begin
   if target_user is null then
     raise exception 'No registered ARKAN user was found with this email';
   end if;
+  insert into public.company_members(company_id,user_id,role)
+  values(target_company,target_user,'staff')
+  on conflict(company_id,user_id) do nothing;
   insert into public.branch_members(company_id,branch_id,user_id,role)
   values(target_company,target_branch,target_user,target_role)
   on conflict(branch_id,user_id) do update set role=excluded.role;
