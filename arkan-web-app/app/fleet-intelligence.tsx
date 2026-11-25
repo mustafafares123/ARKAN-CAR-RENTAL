@@ -92,7 +92,7 @@ export default function FleetIntelligence({ ar, cars, contracts, cash, maintenan
     });
     const finance = Object.entries(totals).map(([cur, value]) => ({ currency: cur, income: value.income, costs: value.costs, net: value.income - value.costs }));
     return {
-      id: String(car.id || car.plate || car.car_number || Math.random()),
+      id: String(car.id || car.plate || car.car_number || [car.make, car.model].filter(Boolean).join("-")),
       name: [car.make, car.model].filter(Boolean).join(" ") || car.car_number || car.plate || t("سيارة", "Vehicle"),
       plate: car.plate || car.car_number || "—",
       status: String(car.status || "").toLowerCase(),
