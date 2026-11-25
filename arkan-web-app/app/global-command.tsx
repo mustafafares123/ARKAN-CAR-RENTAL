@@ -11,17 +11,10 @@ type Props = {
 };
 
 const dateKey = (value: unknown) => String(value || "").slice(0, 10);
-const dayDiff = (date: string, today: string) => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
-  const a = Date.parse(date + "T00:00:00Z");
-  const b = Date.parse(today + "T00:00:00Z");
-  return Number.isFinite(a) && Number.isFinite(b) ? Math.round((a - b) / 86400000) : null;
-};
 const norm = (value: unknown) => String(value || "").trim().toLowerCase();
 const receiptKind = (value: unknown) => ["قبض", "قبض نقدي", "مقبوض", "استلام", "إيراد", "ايراد", "receipt", "income", "received"].includes(norm(value));
 const expenseKind = (value: unknown) => ["صرف", "صرف نقدي", "دفع", "مصروف", "مصروفات", "payment", "expense", "paid"].includes(norm(value));
 const completed = (value: unknown) => ["completed", "مكتمل", "منتهي", "cancelled", "canceled", "ملغي", "closed", "مغلق"].includes(norm(value));
-const vehicleTokens = (value: unknown) => norm(value).split(/\s+-\s+|\s*[|,،]\s*/).filter(Boolean);
 
 export default function GlobalCommand({
   ar, cars, customers, contracts, cash, cashClosings, maintenance,
