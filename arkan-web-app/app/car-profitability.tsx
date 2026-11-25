@@ -30,11 +30,11 @@ const currency = (value: any) => {
 const dateMonth = (row: RecordRow, fields: string[]) => {
   for (const field of fields) {
     const value = String(row[field] || "").slice(0, 7);
-    if (/^\\d{4}-\\d{2}$/.test(value)) return value;
+    if (/^\d{4}-\d{2}$/.test(value)) return value;
   }
   return "";
 };
-const tokens = (value: any) => String(value || "").toLowerCase().split(/\\s+-\\s+|\\s*[|,،]\\s*/).map(x => x.trim()).filter(Boolean);
+const tokens = (value: any) => String(value || "").toLowerCase().split(/\s+-\s+|\s*[|,،]\s*/).map(x => x.trim()).filter(Boolean);
 
 export default function CarProfitability({ ar, cars, contracts, cash, maintenance, insurance, vehicleCosts }: Props) {
   const [period, setPeriod] = useState("all");
