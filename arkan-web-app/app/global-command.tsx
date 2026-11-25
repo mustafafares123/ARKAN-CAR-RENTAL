@@ -5,7 +5,7 @@ import { Activity, AlertTriangle, ArrowUpRight, CalendarClock, CarFront, CheckCi
 
 type Row = { id?: string; [key: string]: any };
 type Props = {
-  ar: boolean; cars: Row[]; customers: Row[]; bookings: Row[]; contracts: Row[];
+  ar: boolean; cars: Row[]; customers: Row[]; contracts: Row[];
   cash: Row[]; maintenance: Row[]; insurance: Row[]; vehicleCosts: Row[];
   inspections: Row[]; incidents: Row[]; fines: Row[]; debts: Row[]; alerts: Row[];
   branches: Row[]; activeBranchId: string; onOpen: (section: string) => void;
@@ -25,7 +25,7 @@ const completed = (value: unknown) => ["completed", "مكتمل", "منتهي", 
 const vehicleTokens = (value: unknown) => norm(value).split(/\s+-\s+|\s*[|,،]\s*/).filter(Boolean);
 
 export default function GlobalCommand({
-  ar, cars, customers, bookings, contracts, cash, maintenance, insurance, vehicleCosts,
+  ar, cars, customers, contracts, cash, maintenance, insurance, vehicleCosts,
   inspections, incidents, fines, debts, alerts, branches, activeBranchId, onOpen
 }: Props) {
   const today = new Date().toISOString().slice(0, 10);
@@ -33,7 +33,6 @@ export default function GlobalCommand({
   const overdueContracts = activeContracts.filter(row => dateKey(row.end_date) && dateKey(row.end_date) < today);
   const unavailableCars = cars.filter(row => ["maintenance", "صيانة", "inactive", "غير نشطة"].includes(norm(row.status)));
   const unclassifiedCash = cash.filter(row => !receiptKind(row.kind) && !expenseKind(row.kind));
-  const cashClosingDifferences = cash.filter(row => false); // Cash closings are summarized in the dedicated closing workspace.
   const openIncidents = incidents.filter(row => !["closed", "resolved", "مغلق", "تمت المعالجة"].includes(norm(row.incident_status)));
   const unpaidFines = fines.filter(row => !["paid", "collected", "مدفوعة", "محصلة", "مغلق"].includes(norm(row.collection_status)));
   const missingPickup = activeContracts.filter(contract => {
