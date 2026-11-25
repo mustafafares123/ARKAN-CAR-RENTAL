@@ -27,7 +27,8 @@ export default function GlobalCommand({
   ar, cars, customers, contracts, cash, cashClosings, maintenance,
   inspections, incidents, fines, debts, alerts, branches, activeBranchId, onOpen
 }: Props) {
-  const now = new Date();\n  const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
+  const now = new Date();
+  const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
   const activeContracts = contracts.filter(row => !completed(row.status));
   const overdueContracts = activeContracts.filter(row => dateKey(row.end_date) && dateKey(row.end_date) < today);
   const unavailableCars = cars.filter(row => ["maintenance", "صيانة", "inactive", "غير نشطة"].includes(norm(row.status)));
