@@ -7,7 +7,7 @@ on:
       - "arkan-web-app/**"
       - ".github/workflows/ci.yml"
   pull_request:
-    branches: [main]
+    branches: [main, feature/arkan-enterprise-phase1]
     paths:
       - "arkan-web-app/**"
       - ".github/workflows/ci.yml"
