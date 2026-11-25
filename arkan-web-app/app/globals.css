@@ -76,3 +76,41 @@
 .receivables-workspace{display:grid;gap:15px}.receivable-stats{grid-template-columns:repeat(4,minmax(0,1fr))}.receivable-stats .stat-card strong{font-size:18px;line-height:1.55}.receivable-toolbar{display:flex;align-items:center;gap:12px;padding:14px 16px}.receivable-toolbar .search-box{flex:1}.receivable-toolbar select{min-width:190px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#344054;font:inherit}.receivable-status{display:inline-flex;padding:5px 9px;border-radius:20px;background:#eaf5ef;color:#28744f;font-size:11px;white-space:nowrap}.receivable-status.overdue{background:#fff0ed;color:#b54735}.receivable-detail{padding:8px 12px;background:#f8fafc;border-radius:9px;overflow-x:auto}.receivable-detail table{min-width:760px}.receivable-detail th,.receivable-detail td{padding:9px 10px}.profit-negative{color:#c44949}.profit-positive{color:#27845a}
 @media(max-width:1000px){.receivable-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.receivable-toolbar{align-items:stretch;flex-direction:column}.receivable-toolbar select{width:100%}.receivable-stats .stat-card strong{font-size:14px}}
+
+
+/* ARKAN GLOBAL command workspace */
+.global-command{display:grid;gap:16px}
+.gc-hero{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:23px 25px;border-radius:15px;background:linear-gradient(120deg,#14253d,#1d3555);color:#fff}
+.gc-hero>div:first-child>span{font:700 10px Inter,sans-serif;letter-spacing:1.8px;color:#c9a45c}
+.gc-hero h2{margin:7px 0 5px;font-size:23px}
+.gc-hero p{margin:0;color:#d0d9e5;font-size:12px;line-height:1.7}
+.gc-context{display:grid;gap:6px;min-width:130px;padding:12px 14px;border:1px solid #ffffff33;border-radius:10px;text-align:center}
+.gc-context b{font-size:12px}.gc-context small{font:11px Inter,sans-serif;color:#e1e7ef}
+.gc-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.gc-metric{display:flex;align-items:center;gap:11px;min-width:0;padding:13px;background:#fff;border:1px solid var(--line);border-radius:11px;text-align:start;cursor:pointer;color:#344054}
+.gc-metric:hover{border-color:#c9a45c}
+.gc-metric>span:nth-child(2){display:grid;gap:4px;flex:1;min-width:0}
+.gc-metric small{font-size:10px;color:var(--muted)}
+.gc-metric strong{font:700 21px Inter,sans-serif;color:#1d2939}
+.gc-icon{display:grid;place-items:center;width:37px;height:37px;flex-shrink:0;border-radius:10px}
+.gc-icon svg{width:18px}.gc-icon.red{background:#fff0ef;color:#bd4949}.gc-icon.orange{background:#fff3e5;color:#b97930}.gc-icon.gold{background:#fbf4e6;color:#a47b31}
+.gc-grid,.gc-bottom{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.gc-panel{min-width:0;padding:18px;background:#fff;border:1px solid var(--line);border-radius:13px}
+.gc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.gc-head>svg{color:#9aa5b3;flex-shrink:0}.gc-head h3{margin:0 0 4px;font-size:14px}.gc-head p{margin:0;color:var(--muted);font-size:10px}
+.gc-risks{display:grid;max-height:380px;overflow:auto}
+.gc-risks>button{display:flex;align-items:center;gap:9px;width:100%;padding:11px 2px;border:0;border-bottom:1px solid #edf0f4;background:transparent;text-align:start;cursor:pointer}
+.gc-risk-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#d69a3b}.gc-risk-dot.high{background:#c44949}
+.gc-risk-copy{display:grid;gap:4px;flex:1;min-width:0}.gc-risk-copy b{font-size:11px;color:#344054}.gc-risk-copy small{font-size:9px;color:#8995a5;overflow-wrap:anywhere}
+.gc-risks em{font-style:normal;font-size:9px;white-space:nowrap;color:#a7792d}.gc-clear{display:flex;align-items:center;gap:9px;min-height:100px;color:#34805c;font-size:11px}.gc-clear svg{width:19px;flex-shrink:0}
+.gc-note{margin:12px 0 0;padding:10px 11px;border-radius:8px;background:#fff9ee;color:#866b3e;font-size:10px;line-height:1.8}
+.gc-workflows{display:grid}.gc-workflows>button{display:flex;align-items:center;gap:10px;padding:12px 2px;border:0;border-bottom:1px solid #edf0f4;background:transparent;text-align:start;cursor:pointer}
+.gc-workflows>button>span:first-child{display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border-radius:9px;background:#f5f2e9;color:#9a793e}.gc-workflows>button>span:nth-child(2){display:grid;gap:4px;flex:1;min-width:0}.gc-workflows b{font-size:11px;color:#344054}.gc-workflows small{font-size:9px;line-height:1.7;color:#8995a5}.gc-workflows>button>svg{flex-shrink:0;color:#9aa5b3}
+.gc-modules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gc-modules>button{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;min-width:0;padding:10px;border:1px solid #edf0f4;border-radius:9px;background:#fff;text-align:start;cursor:pointer}
+.gc-modules>button>span{color:#a17c39}.gc-modules>button>span svg{width:16px}.gc-modules b{font-size:10px;color:#526174;overflow:hidden;text-overflow:ellipsis}.gc-modules strong{font:700 14px Inter,sans-serif;color:#25354b}
+.gc-foot{margin-top:13px;padding-top:11px;border-top:1px solid #edf0f4;color:#7b8797;font-size:10px;line-height:1.8}.gc-foot b{color:#344054}
+.gc-readiness ul{display:grid;gap:10px;margin:0;padding-inline-start:18px}.gc-readiness li{padding-inline-start:3px;color:#344054;font-size:11px}.gc-readiness li span{display:block;margin-top:4px;color:#8995a5;font-size:10px;line-height:1.6}
+.gc-disclaimer{display:flex;align-items:flex-start;gap:9px;padding:12px 14px;border:1px solid #f0e4cc;border-radius:10px;background:#fff9ee;color:#866b3e;font-size:10px;line-height:1.8}.gc-disclaimer svg{flex-shrink:0;margin-top:2px}
+@media(max-width:900px){.gc-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gc-grid,.gc-bottom{grid-template-columns:1fr}}
+@media(max-width:600px){.gc-hero{align-items:flex-start;flex-direction:column;padding:18px}.gc-hero h2{font-size:20px}.gc-context{width:100%;grid-template-columns:1fr auto;align-items:center;text-align:start}.gc-metrics{gap:8px}.gc-metric{padding:10px;gap:8px}.gc-icon{width:32px;height:32px}.gc-metric strong{font-size:18px}.gc-panel{padding:14px}.gc-modules{grid-template-columns:repeat(2,minmax(0,1fr))}}
