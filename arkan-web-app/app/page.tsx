@@ -128,6 +128,7 @@ export default function Home() {
  const ar=lang==="ar"; const active=SECTIONS.find(s=>s[0]===section)!; const ActiveIcon=active[3];
  const canManageBranches=["owner","admin","manager"].includes(companyRole);
  useEffect(()=>{
+  const requestedSection=new URLSearchParams(window.location.search).get("section");if(requestedSection&&SECTIONS.some(item=>item[0]===requestedSection))setSection(requestedSection);
   try{const saved=localStorage.getItem("arkan-data-v1");if(saved)setRows({...initial,...JSON.parse(saved)});}catch(e){}finally{setLocalLoaded(true);}
   if(!envReady){setSessionReady(true);return;}
   const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
@@ -394,7 +395,7 @@ export default function Home() {
 
  if(envReady&&!sessionReady)return <main className="app" dir="rtl"><div className="auth-gate"><div className="auth-card"><div className="brand-mark">A</div><h1>ARKAN CO.</h1><p>{ar?"جارٍ الاتصال بقاعدة بيانات أركان...":"Connecting to ARKAN cloud..."}</p></div></div></main>;
  if(envReady&&!companyId)return <main className="app" dir="rtl"><div className="auth-gate"><div className="auth-card"><div className="brand-mark">A</div><h1>ARKAN CO.</h1><p>{ar?"سجّل الدخول لمزامنة سيارات الشركة وصورها بين الأجهزة.":"Sign in to sync company vehicles and photos across devices."}</p><label>{ar?"البريد الإلكتروني":"Email"}<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></label><label>{ar?"كلمة المرور":"Password"}<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></label><button className="primary-btn" disabled={loading||!email||password.length<6} onClick={signIn}>{ar?"تسجيل الدخول":"Sign in"}</button><button className="secondary-btn" disabled={loading||!email||password.length<6} onClick={signUp}>{ar?"إنشاء حساب جديد":"Create account"}</button>{notice&&<p className="auth-notice">{notice}</p>}<small>{ar?"يجب تشغيل إعداد قاعدة البيانات السحابية أولاً.":"Cloud database setup must be applied first."}</small></div></div></main>;
- const nav=<>{SECTIONS.map(s=>{const Icon=s[3];return <button key={s[0]} className={"nav-item "+(section===s[0]?"selected":"")} onClick={()=>{setSection(s[0]);setQuery("");setMobileOpen(false)}}><Icon size={18}/><span>{title(s)}</span></button>})}</>;
+ const nav=<><a className="nav-item" href="/owner"><ShieldCheck size={18}/><span>{ar?"مركز قيادة المالك":"Owner Command"}</span></a>{SECTIONS.map(s=>{const Icon=s[3];return <button key={s[0]} className={"nav-item "+(section===s[0]?"selected":"")} onClick={()=>{setSection(s[0]);setQuery("");setMobileOpen(false)}}><Icon size={18}/><span>{title(s)}</span></button>})}</>;
  const sectionLabel=title(active);
  return <main className={ar?"app rtl":"app ltr"} dir={ar?"rtl":"ltr"}>
   <aside className={"sidebar "+(mobileOpen?"open":"")}><div className="brand"><div className="brand-mark">A</div><div><b>ARKAN CO.</b><small>RENT A CAR</small></div><button className="close-mobile" onClick={()=>setMobileOpen(false)}><X/></button></div>
