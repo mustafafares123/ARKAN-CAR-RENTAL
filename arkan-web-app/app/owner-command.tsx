@@ -44,7 +44,7 @@ export default function OwnerCommand({ ar, role, cars, contracts, cash, debts, a
   const isOwner = ["owner", "admin"].includes(role);
   const today = new Date().toISOString().slice(0, 10);
   const activeContracts = contracts.filter(r => !["completed", "مكتمل", "منتهي", "cancelled", "canceled", "ملغي"].includes(String(r.status || "").toLowerCase()));
-  const overdueContracts = activeContracts.filter(r => String(r.end_date || "").slice(0, 10) < today);
+  const overdueContracts = activeContracts.filter(r => Boolean(r.end_date) && String(r.end_date).slice(0, 10) < today);
   const maintenanceAlerts = alerts.filter(r => ["maintenance", "صيانة"].includes(String(r.kind || "").toLowerCase()) || /maintenance|صيانة/i.test(String(r.title || "")));
   const pendingApprovals = approvals.filter(r => r.status === "pending");
   const openFindings = findings.filter(r => ["open", "acknowledged"].includes(r.status));
