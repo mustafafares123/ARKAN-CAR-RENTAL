@@ -146,3 +146,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 - The current web interface stores bookings and contracts in `arkan_records` (JSONB), not only in the legacy `bookings` and `contracts` tables.
 - Apply `supabase/arkan_server_side_rental_validation.sql` after the unified cloud records, branch, and customer-compliance setup. It adds a database trigger that requires a linked customer and re-checks the customer's age, driving-licence duration/validity, and both identity-document images on every cloud booking/contract insert or update.
 - This is additive and does not rewrite existing bookings or contracts. Older records without `customer_id` remain unchanged; edit and save each record only after matching it to the correct customer. Do not bulk-link by name because customer names may be duplicated.
+
+## Database-level vehicle availability protection
+
+- Apply `supabase/arkan_rental_availability.sql` after the unified cloud-records and branch setup.
+- The database now rejects overlapping active bookings/contracts for the same vehicle, even when requests arrive from separate devices at nearly the same time.
+- Existing records are not rewritten or deleted. Historical overlaps are not automatically changed; review them manually before relying on availability reports.
+- Availability uses the vehicle identifiers in the saved car label (for example, plate and car number separated by ` - `).
