@@ -22,7 +22,7 @@ export default function VehicleDNA({ar,cars,contracts,cash,maintenance,insurance
   const cs=contracts.filter(matches);
   const nums=new Set(cs.map(x=>String(x.contract_no||"").trim()).filter(Boolean));
   const receipts=cash.filter(x=>nums.has(String(x.contract_no||"").trim())&&["قبض","قبض نقدي","مقبوض","استلام","إيراد","ايراد","receipt","income","received"].includes(String(x.kind||"").trim().toLowerCase()));
-  const costs=[...maintenance.filter(matches).map(x=>({...x,_kind:"maintenance",_date:dateOf(x,["service_date","created_at"]),_amount:n(x.cost)})),...insurance.filter(matches).map(x=>({...x,_kind:"insurance",_date:dateOf(x,["start_date","created_at"]),_amount:n(x.premium)})),...vehicleCosts.filter(matches).map(x=>({...x,_kind:"registration",_date:dateOf(x,["due_date","created_at"]),_amount:n(x.amount)}))];
+  const costs: Row[]=[...maintenance.filter(matches).map(x=>({...x,_kind:"maintenance",_date:dateOf(x,["service_date","created_at"]),_amount:n(x.cost)})),...insurance.filter(matches).map(x=>({...x,_kind:"insurance",_date:dateOf(x,["start_date","created_at"]),_amount:n(x.premium)})),...vehicleCosts.filter(matches).map(x=>({...x,_kind:"registration",_date:dateOf(x,["due_date","created_at"]),_amount:n(x.amount)}))];
   const sums:Record<string,{income:number;cost:number}>={};
   receipts.forEach(x=>{const c=cur(x.currency);if(!sums[c])sums[c]={income:0,cost:0};sums[c].income+=n(x.amount);});
   costs.forEach(x=>{const c=cur(x.currency);if(!sums[c])sums[c]={income:0,cost:0};sums[c].cost+=x._amount;});
