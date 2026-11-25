@@ -140,3 +140,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 - `supabase/schema.sql`: مخطط قاعدة البيانات والسياسات الأولية.
 - `supabase/production_upgrade.sql`: ترقية الصلاحيات ودوال الشركة والتخزين الخاص.
 - `.env.example`: أسماء إعدادات الربط المطلوبة.
+
+## Server-side validation for cloud bookings and contracts
+
+- The current web interface stores bookings and contracts in `arkan_records` (JSONB), not only in the legacy `bookings` and `contracts` tables.
+- Apply `supabase/arkan_server_side_rental_validation.sql` after the unified cloud records, branch, and customer-compliance setup. It adds a database trigger that requires a linked customer and re-checks the customer's age, driving-licence duration/validity, and both identity-document images on every cloud booking/contract insert or update.
+- This is additive and does not rewrite existing bookings or contracts. Older records without `customer_id` remain unchanged; edit and save each record only after matching it to the correct customer. Do not bulk-link by name because customer names may be duplicated.
