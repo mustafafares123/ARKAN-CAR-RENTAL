@@ -83,13 +83,11 @@ const FIELDS: Record<string,string[]> = {
  archive:["document_title","document_type","related_car","related_customer","document_date","expiry_date","file_name","notes"],
  alerts:["title","date","days","priority","kind"]
 };
+// Start with empty collections. Existing browser/cloud records are loaded separately;
+ // never seed fictitious vehicles or customers into a real rental workspace.
 const initial: Record<string,Row[]> = {
- cars:[
-  {id:"c1",car_number:"CAR-001",plate:"12-345-67",make:"Toyota",model:"Corolla",year:"2022",status:"متاحة",daily_rate:"150"},
-  {id:"c2",car_number:"CAR-002",plate:"22-111-33",make:"Hyundai",model:"Elantra",year:"2023",status:"مؤجرة",daily_rate:"170"},
-  {id:"c3",car_number:"CAR-003",plate:"33-222-44",make:"Kia",model:"Sportage",year:"2021",status:"صيانة",daily_rate:"210"}
- ],
- customers:[{id:"u1",full_name:"عميل تجريبي",phone:"0590000000",identity_no:"",email:""}],
+ cars:[],
+ customers:[],
  bookings:[],contracts:[],cash:[],cash_closings:[],maintenance:[],insurance:[],vehicle_costs:[],trackers:[],fines:[],inspections:[],audit:[]
 };
 const money = (v:any) => new Intl.NumberFormat("en-US",{maximumFractionDigits:2}).format(Number(v||0));
