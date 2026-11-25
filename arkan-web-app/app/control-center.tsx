@@ -81,7 +81,7 @@ export default function ControlCenter({ ar, cars, customers, bookings, contracts
     </div>
     <div className="cc-two-columns">
       <div className="cc-panel"><div className="cc-panel-head"><div><h3>{ar ? "حركة الصندوق هذا الشهر" : "Cash movement this month"}</h3><p>{monthText}</p></div><Wallet size={20}/></div>
-        <div className="cc-finance-grid"><div><small>{ar ? "المقبوضات" : "Receipts"}</small><strong>{cashSummary("receipts")}</strong></div><div><small>{ar ? "المدفوعات" : "Payments"}</small><strong>{cashSummary("expenses")}</strong></div><div className="cc-net"><small>{ar ? "صافي حركة الصندوق" : "Net cash movement"}</small><strong>{cashSummary("net")}</div></div>
+        <div className="cc-finance-grid"><div><small>{ar ? "المقبوضات" : "Receipts"}</small><strong>{cashSummary("receipts")}</strong></div><div><small>{ar ? "المدفوعات" : "Payments"}</small><strong>{cashSummary("expenses")}</strong></div><div className="cc-net"><small>{ar ? "صافي حركة الصندوق" : "Net cash movement"}</small><strong>{cashSummary("net")}</strong></div></div>
         <p className="cc-footnote">{ar ? "الأرقام حسب حركات الصندوق المسجلة فقط، ولا يتم جمع عملات مختلفة في إجمالي واحد." : "Based only on recorded cash transactions. Different currencies are not combined into one total."}</p>
         {unknownCash > 0 && <p className="cc-warning"><AlertTriangle size={15}/>{ar ? String(unknownCash) + " حركة هذا الشهر تحتاج تصنيف قبض أو صرف." : String(unknownCash) + " transactions this month need a receipt/expense classification."}</p>}
         <button type="button" className="cc-link" onClick={() => onOpen("cash")}>{ar ? "فتح الصندوق ←" : "Open cashbox →"}</button>
