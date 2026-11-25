@@ -16,6 +16,7 @@ export default function OwnerPage() {
   const [cash, setCash] = useState<Row[]>([]);
   const [approvals, setApprovals] = useState<Row[]>([]);
   const [findings, setFindings] = useState<Row[]>([]);
+  const [alerts, setAlerts] = useState<Row[]>([]);
   const [debts, setDebts] = useState<Row[]>([]);
   const [companyId, setCompanyId] = useState("");
   const [branchId, setBranchId] = useState("");
@@ -41,6 +42,21 @@ export default function OwnerPage() {
     setCash(cashData);
     setApprovals(approvalResult.data || []);
     setFindings(findingResult.data || []);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const alertRows: Row[] = [];
+    records.forEach((record: any) => {
+      const candidates = record.section === "insurance" ? [{ field: "end_date", label: "انتهاء تأمين السيارة", target: "insurance" }]
+        : record.section === "vehicle_costs" ? [{ field: "due_date", label: "استحقاق ترخيص السيارة", target: "vehicle_costs" }]
+        : record.section === "maintenance" ? [{ field: "next_service_date", label: "موعد الصيانة القادمة", target: "maintenance" }] : [];
+      candidates.forEach(candidate => {
+        const raw = String(record[candidate.field] || "").slice(0, 10);
+        if (!raw) return;
+        const due = new Date(raw + "T00:00:00"); if (Number.isNaN(due.getTime())) return;
+        const days = Math.round((due.getTime() - today.getTime()) / 86400000);
+        if (days <= 30) alertRows.push({ id: record.id + ":" + candidate.field, title: candidate.label + " · " + (record.car_label || record.plate || ""), date: raw, days, target: candidate.target, kind: candidate.target, priority: days < 0 ? "متأخر" : days <= 7 ? "عاجل" : "قريب" });
+      });
+    });
+    setAlerts(alertRows.sort((a, b) => a.days - b.days));
     const receiptTypes = ["قبض", "قبض نقدي", "مقبوض", "استلام", "إيراد", "ايراد", "receipt", "income", "received"];
     const outstanding = contractsData.map((contract: any) => {
       const received = cashData.filter((entry: any) => entry.contract_no === contract.contract_no && receiptTypes.includes(String(entry.kind || "").trim().toLowerCase())).reduce((sum: number, entry: any) => sum + Number(entry.amount || 0), 0);
@@ -108,5 +124,5 @@ export default function OwnerPage() {
   }
 
   if (message) return <main dir="rtl" style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f4f6f9", padding: 24, fontFamily: "Arial,sans-serif" }}><section style={{ background: "white", borderRadius: 16, padding: 28, maxWidth: 560, width: "100%", boxShadow: "0 12px 40px #14253d12" }}><h1 style={{ color: "#14253d" }}>ARKAN OWNER</h1><p>{message}</p></section></main>;
-  return <main style={{ minHeight: "100vh", padding: 24, background: "#f4f6f9", color: "#14253d", fontFamily: "Arial,sans-serif" }}><div style={{ maxWidth: 1440, margin: "0 auto" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}><a href="/" style={{ color: "#14253d" }}>← العودة إلى ARKAN</a><button disabled={busy} onClick={() => client && refresh(client, companyId, branchId)} style={{ padding: "9px 14px", borderRadius: 9, border: "1px solid #c9a45c", background: "white", cursor: "pointer" }}>تحديث البيانات</button></div><OwnerCommand ar={true} role={role} cars={cars} contracts={contracts} cash={cash} debts={debts} alerts={[]} approvals={approvals} findings={findings} onOpen={(section) => { window.location.href = "/?section=" + encodeURIComponent(section); }} onCreateApproval={createApproval} onReviewApproval={reviewApproval}/></div></main>;
+  return <main style={{ minHeight: "100vh", padding: 24, background: "#f4f6f9", color: "#14253d", fontFamily: "Arial,sans-serif" }}><div style={{ maxWidth: 1440, margin: "0 auto" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}><a href="/" style={{ color: "#14253d" }}>← العودة إلى ARKAN</a><button disabled={busy} onClick={() => client && refresh(client, companyId, branchId)} style={{ padding: "9px 14px", borderRadius: 9, border: "1px solid #c9a45c", background: "white", cursor: "pointer" }}>تحديث البيانات</button></div><OwnerCommand ar={true} role={role} cars={cars} contracts={contracts} cash={cash} debts={debts} alerts={alerts} approvals={approvals} findings={findings} onOpen={(section) => { window.location.href = "/?section=" + encodeURIComponent(section); }} onCreateApproval={createApproval} onReviewApproval={reviewApproval}/></div></main>;
 }
