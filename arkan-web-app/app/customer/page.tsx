@@ -5,7 +5,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   CarFront, UserRound, CalendarDays, LogOut, Languages, ShieldCheck,
   LockKeyhole, Menu, X, Fuel, Settings2, Users, ArrowUpRight, CheckCircle2,
-  Clock3, KeyRound, Sparkles, RefreshCw
+  Clock3, KeyRound, Sparkles, RefreshCw, Search, ArrowDownWideNarrow,
+  Heart, SlidersHorizontal, Eye, EyeOff, BadgeCheck, Headphones, CalendarCheck2
 } from "lucide-react";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://blknmrmibgklnfqycxnq.supabase.co";
@@ -32,6 +33,10 @@ export default function CustomerPortal() {
   const [tab, setTab] = useState<"cars" | "bookings" | "profile">("cars");
   const [carSearch, setCarSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<"recommended" | "price-low" | "price-high">("recommended");
+  const [fuelFilter, setFuelFilter] = useState("all");
+  const [transmissionFilter, setTransmissionFilter] = useState("all");
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
   const ar = lang === "ar";
 
   useEffect(() => {
@@ -97,8 +102,16 @@ export default function CustomerPortal() {
   const visibleCars = cars
     .filter((car) => [car.make, car.model, car.year, car.color, car.transmission, car.fuel_type]
       .filter(Boolean).join(" ").toLocaleLowerCase().includes(carSearch.trim().toLocaleLowerCase()))
+    .filter((car) => fuelFilter === "all" || car.fuel_type === fuelFilter)
+    .filter((car) => transmissionFilter === "all" || car.transmission === transmissionFilter)
     .sort((a, b) => sortOrder === "price-low" ? Number(a.daily_rate) - Number(b.daily_rate)
       : sortOrder === "price-high" ? Number(b.daily_rate) - Number(a.daily_rate) : 0);
+
+  const fuelOptions = Array.from(new Set(cars.map((car) => car.fuel_type).filter(Boolean))) as string[];
+  const transmissionOptions = Array.from(new Set(cars.map((car) => car.transmission).filter(Boolean))) as string[];
+  const resetFilters = () => { setCarSearch(""); setFuelFilter("all"); setTransmissionFilter("all"); setSortOrder("recommended"); };
+  const toggleFavorite = (carId: string) => setFavorites((current) => current.includes(carId)
+    ? current.filter((id) => id !== carId) : [...current, carId]);
 
   return (
     <main dir={ar ? "rtl" : "ltr"} className="portal">
@@ -179,7 +192,11 @@ export default function CustomerPortal() {
           <div>
             <div className="cp-kicker"><Sparkles size={14}/>{label("تجربة أركان للعملاء","THE ARKAN CUSTOMER EXPERIENCE")}</div>
             <h1>{label("رحلتك تبدأ من هنا.","Your journey starts here.")}</h1>
-            <p>{label("اكتشف أسطول سيارات أركان، تعرّف على المواصفات والأسعار، وتابع حسابك وطلباتك من مكان واحد.", "Explore the ARKAN fleet, compare vehicle details and daily rates, and keep your account and requests in one place.")}</p>
+            <p>{label("اكتشف أسطول سيارات أركان، قارن المواصفات والأسعار، وتابع ملفك وطلباتك من مساحة واحدة سهلة وآمنة.", "Explore the ARKAN fleet, compare vehicle details and daily rates, and manage your profile and requests in one simple, secure space.")}</p>
+            <div className="cp-hero-actions">
+              <a className="cp-btn cp-gold" href="#cp-fleet"><CarFront size={16}/>{label("استكشف السيارات","Explore vehicles")}</a>
+              <a className="cp-btn cp-hero-link" href="#cp-account"><UserRound size={16}/>{label("حساب العميل","Customer account")}</a>
+            </div>
           </div>
           <div className="cp-hero-art"><ShieldCheck size={19}/>{label("حجز آمن وموثوق","Secure customer portal")}</div>
         </section>
@@ -195,8 +212,8 @@ export default function CustomerPortal() {
             </nav>
 
             {tab === "cars" && <>
-              <div className="cp-panel-title">
-                <div><h2>{label("السيارات المتاحة","Available vehicles")}</h2><div className="cp-muted">{label("اختر ما يناسب رحلتك من أسطولنا.","Find the right vehicle for your next trip.")}</div></div>
+              <div className="cp-panel-title" id="cp-fleet">
+                <div><h2>{label("اختر سيارتك القادمة","Find your next car")}</h2><div className="cp-muted">{label("اختر ما يناسب رحلتك من أسطولنا.","Find the right vehicle for your next trip.")}</div></div>
                 <button className="cp-btn cp-soft" onClick={refreshCars} disabled={catalogBusy}><RefreshCw size={14}/>{label("تحديث","Refresh")}</button>
               </div>
               <div className="cp-fleet-tools">
@@ -213,13 +230,30 @@ export default function CustomerPortal() {
                     <option value="price-high">{label("السعر: من الأعلى","Price: high to low")}</option>
                   </select>
                 </label>
+                <label className="cp-filterbox">
+                  <SlidersHorizontal size={15}/>
+                  <select value={fuelFilter} onChange={(event) => setFuelFilter(event.target.value)} aria-label={label("تصفية حسب الوقود","Filter by fuel")}>
+                    <option value="all">{label("كل أنواع الوقود","All fuel types")}</option>
+                    {fuelOptions.map((fuel) => <option key={fuel} value={fuel}>{fuel}</option>)}
+                  </select>
+                </label>
+                <label className="cp-filterbox">
+                  <Settings2 size={15}/>
+                  <select value={transmissionFilter} onChange={(event) => setTransmissionFilter(event.target.value)} aria-label={label("تصفية حسب ناقل الحركة","Filter by transmission")}>
+                    <option value="all">{label("كل نواقل الحركة","All transmissions")}</option>
+                    {transmissionOptions.map((transmission) => <option key={transmission} value={transmission}>{transmission}</option>)}
+                  </select>
+                </label>
                 <span className="cp-results-count">{label("عرض","Showing")} <b>{visibleCars.length}</b> {label("من","of")} <b>{cars.length}</b></span>
+                {(carSearch || fuelFilter !== "all" || transmissionFilter !== "all" || sortOrder !== "recommended") &&
+                  <button className="cp-clear-filters" onClick={resetFilters}>{label("مسح الفلاتر","Clear filters")}</button>}
               </div>
               {catalogBusy ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><RefreshCw size={24}/></div><b>{label("جارٍ تحميل السيارات","Loading vehicles")}</b><p className="cp-muted">{label("لحظات ونجهز لك الأسطول المتاح.","Getting the available fleet ready.")}</p></div>
               : cars.length === 0 ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><CarFront size={27}/></div><b>{label("لا توجد سيارات متاحة للعرض حالياً","No vehicles available right now")}</b><p className="cp-muted">{label("يرجى المحاولة لاحقاً أو التواصل مع فريق أركان.","Please check again later or contact the ARKAN team.")}</p></div>
               : visibleCars.length === 0 ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><Search size={25}/></div><b>{label("لم نعثر على سيارة بهذه المواصفات","No vehicles match your search")}</b><p className="cp-muted">{label("جرّب كلمة بحث أخرى أو امسح البحث لعرض جميع السيارات.","Try another search or clear it to see the full fleet.")}</p><button className="cp-btn cp-soft" onClick={() => setCarSearch("")}>{label("مسح البحث","Clear search")}</button></div>
               : <div className="cp-grid">{visibleCars.map(car => <article className="cp-card" key={car.id}>
                   <div className="cp-photo">
+                    <button type="button" className={favorites.includes(car.id) ? "cp-favorite active" : "cp-favorite"} onClick={() => toggleFavorite(car.id)} aria-label={favorites.includes(car.id) ? label("إزالة من المفضلة","Remove from favorites") : label("إضافة إلى المفضلة","Add to favorites")} aria-pressed={favorites.includes(car.id)}><Heart size={17} fill={favorites.includes(car.id) ? "currentColor" : "none"}/></button>
                     {car.image_url ? <img src={car.image_url} alt={`${car.make || ""} ${car.model || ""}`} loading="lazy"/> : <CarFront size={55} strokeWidth={1.2}/>}
                     <span className="cp-photo-label">{label("متاحة الآن","Available")}</span>
                   </div>
@@ -238,10 +272,11 @@ export default function CustomerPortal() {
                       <div className="cp-price">{Number(car.daily_rate || 0).toLocaleString("en-US")} ₪ <small>{label(" / يوم"," / day")}</small></div>
                       <span className="cp-muted">{label("السعر اليومي","Daily rate")}</span>
                     </div>
-                    <button className="cp-btn cp-dark" style={{width:"100%",marginTop:15}} disabled={!session || !linked} onClick={() => setNotice(label("تم اعتماد ملفك. سيتم تفعيل إجراءات الحجز عبر الإدارة قريباً.","Your profile is approved. Online booking actions will be enabled soon."))}>
-                      {label("طلب حجز السيارة","Request this vehicle")}<ArrowUpRight size={15}/>
+                    <button className="cp-btn cp-dark" style={{width:"100%",marginTop:15}} disabled={!session || !linked} onClick={() => setNotice(label("ملفك معتمد. يرجى التواصل مع فريق أركان لإتمام طلب هذه السيارة.","Your profile is approved. Please contact ARKAN to complete a request for this vehicle."))}>
+                      {label("استفسر عن هذه السيارة","Enquire about this car")}<ArrowUpRight size={15}/>
                     </button>
-                    {!session && <div className="cp-muted" style={{textAlign:"center",marginTop:7}}>{label("سجّل الدخول لبدء طلب الحجز.","Sign in to start a booking request.")}</div>}
+                    {!session && <div className="cp-muted cp-card-hint">{label("سجّل الدخول، ثم أكمل اعتماد ملفك لطلب السيارة.","Sign in and complete profile verification to request this vehicle.")}</div>}
+                    {session && !linked && <div className="cp-muted cp-card-hint">{label("يُتاح طلب السيارة بعد ربط الحساب واعتماد الهوية والرخصة.","Vehicle requests unlock after your account, ID and licence are verified.")}</div>}
                   </div>
                 </article>)}</div>}
             </>}
@@ -252,10 +287,10 @@ export default function CustomerPortal() {
           </section>
 
           <aside className="cp-side">
-            {!session ? <div className="cp-panel">
-              <div className="cp-panel-title"><div><h3>{label("دخول العملاء","Customer access")}</h3><div className="cp-muted">{label("ادخل إلى حسابك لمتابعة طلباتك.","Sign in to follow your requests.")}</div></div><KeyRound color="#b18b42"/></div>
+            {!session ? <div className="cp-panel" id="cp-account">
+              <div className="cp-panel-title"><div><h3>{label("مرحباً بك في أركان","Welcome to ARKAN")}</h3><div className="cp-muted">{label("ادخل إلى حسابك لمتابعة طلباتك.","Sign in to follow your requests.")}</div></div><KeyRound color="#b18b42"/></div>
               <label className="cp-field">{label("البريد الإلكتروني","Email address")}<input className="cp-input" type="email" autoComplete="email" placeholder="name@example.com" value={email} onChange={e => setEmail(e.target.value)}/></label>
-              <label className="cp-field">{label("كلمة المرور","Password")}<input className="cp-input" type="password" autoComplete="current-password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}/></label>
+              <label className="cp-field">{label("كلمة المرور","Password")}<span className="cp-password-wrap"><input className="cp-input" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}/><button type="button" className="cp-password-toggle" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? label("إخفاء كلمة المرور","Hide password") : label("إظهار كلمة المرور","Show password")}>{showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}</button></span></label>
               <div className="cp-auth-actions">
                 <button className="cp-btn cp-gold" disabled={busy || !email || password.length < 6} onClick={() => auth("in")}>{label("تسجيل الدخول","Sign in")}</button>
                 <button className="cp-btn cp-soft" disabled={busy || !email || password.length < 6} onClick={() => auth("up")}>{label("إنشاء حساب","Create account")}</button>
