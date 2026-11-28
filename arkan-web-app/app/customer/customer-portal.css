@@ -38,3 +38,17 @@
 @media(max-width:950px){.portal .cp-layout{grid-template-columns:1fr}.portal .cp-side{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.portal .cp-shell{padding:10px 12px 28px}.portal .cp-header{padding:13px 15px}.portal .cp-hero{min-height:0;margin:14px 0 17px;padding:27px 22px;border-radius:17px}.portal .cp-hero h1{font-size:29px}.portal .cp-hero-art{margin-top:18px}.portal .cp-layout{gap:15px}.portal .cp-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.portal .cp-nav button{justify-content:center;padding:10px 5px;font-size:11px;gap:5px}.portal .cp-panel{padding:15px}.portal .cp-grid{grid-template-columns:1fr;gap:13px}.portal .cp-photo{height:205px}.portal .cp-side{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.portal .cp-card,.portal .cp-photo img,.portal .cp-btn{transition:none!important}}
+
+
+/* Fleet discovery controls */
+.portal .cp-fleet-tools{display:grid;grid-template-columns:minmax(220px,1fr) minmax(190px,230px) auto;align-items:center;gap:10px;margin:0 0 17px}
+.portal .cp-searchbox,.portal .cp-sortbox{min-height:46px;display:flex;align-items:center;gap:10px;padding:0 13px;border:1px solid #e1e6ed;border-radius:11px;background:#fff;color:#8a96a5}
+.portal .cp-searchbox:focus-within,.portal .cp-sortbox:focus-within{border-color:#c9a45c;box-shadow:0 0 0 3px #c9a45c20}
+.portal .cp-searchbox input,.portal .cp-sortbox select{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#26364b;font:500 12px inherit}
+.portal .cp-searchbox input::placeholder{color:#9aa4b1}
+.portal .cp-searchbox button{display:grid;place-items:center;border:0;background:#f0f3f7;color:#697789;border-radius:7px;width:27px;height:27px;cursor:pointer;flex:0 0 auto}
+.portal .cp-sortbox select{cursor:pointer}
+.portal .cp-results-count{color:#8a96a5;font-size:11px;white-space:nowrap;text-align:end}
+.portal .cp-results-count b{color:#253a56;font:800 13px Inter}
+@media(max-width:720px){.portal .cp-fleet-tools{grid-template-columns:1fr 1fr}.portal .cp-searchbox{grid-column:1/-1}.portal .cp-results-count{grid-column:1/-1;text-align:start}}
+@media(max-width:420px){.portal .cp-fleet-tools{grid-template-columns:1fr}.portal .cp-searchbox{grid-column:auto}.portal .cp-results-count{grid-column:auto}}
