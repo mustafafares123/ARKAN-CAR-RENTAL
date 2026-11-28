@@ -109,3 +109,84 @@
 .portal .cp-cardbody .cp-btn{min-height:44px}
 @media(max-width:1120px){.portal .cp-fleet-tools{grid-template-columns:repeat(2,minmax(0,1fr))}.portal .cp-searchbox{grid-column:1/-1}.portal .cp-results-count{grid-column:1/-1;text-align:start}}
 @media(max-width:620px){.portal .cp-favorites-filter{min-height:40px}.portal .cp-quick-stats b{font-size:16px}}
+
+
+/* ARKAN mobile-first customer experience */
+@media (max-width: 720px) {
+  .portal { min-height:100svh; padding-bottom:env(safe-area-inset-bottom); }
+  .portal .cp-shell { width:100%; max-width:560px; padding:10px 12px 28px; }
+  .portal .cp-header { min-height:60px; padding:10px 13px; border-radius:15px; gap:8px; }
+  .portal .cp-brand { gap:9px; }
+  .portal .cp-mark { width:38px; height:38px; flex:0 0 38px; border-radius:11px; font-size:22px; }
+  .portal .cp-brand-name { font-size:13px; letter-spacing:1px; }
+  .portal .cp-brand-sub { font-size:7px; letter-spacing:1.2px; margin-top:3px; }
+  .portal .cp-actions .cp-btn { min-height:40px; padding:8px 10px; font-size:11px; }
+  .portal .cp-hero-premium { min-height:0; display:flex; flex-direction:column; align-items:stretch; justify-content:center; gap:16px; margin:12px 0 15px; padding:25px 19px 18px; border-radius:18px; }
+  .portal .cp-hero-copy { width:100%; }
+  .portal .cp-hero h1 { max-width:100%; margin:10px 0 8px; font-size:clamp(25px,7vw,32px); line-height:1.45; }
+  .portal .cp-hero p { max-width:100%; font-size:12px; line-height:1.9; }
+  .portal .cp-kicker { font-size:9px; letter-spacing:.7px; }
+  .portal .cp-hero-vehicle { width:100%; opacity:.27; }
+  .portal .cp-hero-vehicle:after,
+  .portal[dir="rtl"] .cp-hero-vehicle:after { background:linear-gradient(0deg,#101d30 0%,#14253dcc 65%,#14253d88 100%); }
+  .portal .cp-hero-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+  .portal .cp-hero-actions a { width:100%; min-height:44px; padding:10px 8px; font-size:11px; }
+  .portal .cp-hero-premium .cp-hero-art { align-self:flex-start; margin:0; padding:8px 11px; font-size:10px; }
+  .portal .cp-quick-stats { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:0 0 14px; }
+  .portal .cp-quick-stats article { min-height:83px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; padding:10px 9px; border-radius:12px; }
+  .portal .cp-stat-icon { width:30px; height:30px; flex-basis:30px; border-radius:9px; }
+  .portal .cp-stat-icon svg { width:15px; height:15px; }
+  .portal .cp-quick-stats b { max-width:100%; font-size:12px; line-height:1.4; overflow-wrap:anywhere; }
+  .portal .cp-quick-stats small { font-size:9px; line-height:1.4; }
+  .portal .cp-notice { padding:11px 12px; margin-bottom:12px; border-radius:11px; font-size:11px; }
+  .portal .cp-layout { display:flex; flex-direction:column; gap:13px; }
+  .portal .cp-main, .portal .cp-side { width:100%; min-width:0; }
+  .portal .cp-side { display:grid; grid-template-columns:1fr; gap:12px; }
+  .portal .cp-nav { position:sticky; z-index:20; top:6px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; margin:0 0 13px; padding:5px; border:1px solid #e2e7ed; border-radius:13px; background:#ffffffed; box-shadow:0 5px 18px #14253d12; backdrop-filter:blur(12px); }
+  .portal .cp-nav button { min-width:0; min-height:43px; justify-content:center; gap:5px; padding:8px 3px; border-radius:9px; font-size:10px; white-space:nowrap; }
+  .portal .cp-nav button svg { width:15px; height:15px; flex:0 0 auto; }
+  .portal .cp-panel-title { align-items:flex-start; gap:8px; margin-bottom:13px; }
+  .portal .cp-panel-title h2 { font-size:16px; line-height:1.5; }
+  .portal .cp-panel-title h3 { font-size:15px; }
+  .portal .cp-panel-title .cp-btn { min-height:40px; padding:8px 10px; font-size:10px; flex:0 0 auto; }
+  .portal .cp-fleet-tools { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:13px; }
+  .portal .cp-searchbox { grid-column:1/-1; min-height:46px; }
+  .portal .cp-sortbox { grid-column:1/-1; min-height:44px; }
+  .portal .cp-filterbox { min-height:43px; padding:0 8px; gap:5px; }
+  .portal .cp-filterbox select { font-size:10px; }
+  .portal .cp-favorites-filter { min-height:43px; padding:0 8px; font-size:10px; }
+  .portal .cp-results-count { grid-column:1/-1; text-align:start; font-size:10px; }
+  .portal .cp-clear-filters { justify-self:start; font-size:11px; min-height:36px; }
+  .portal .cp-grid { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .portal .cp-card { border-radius:15px; }
+  .portal .cp-photo { height:clamp(185px,58vw,245px); }
+  .portal .cp-cardbody { padding:14px; }
+  .portal .cp-car-title { font-size:16px; }
+  .portal .cp-specs { gap:6px; margin:11px 0 13px; }
+  .portal .cp-spec { min-height:30px; padding:6px 8px; font-size:10px; }
+  .portal .cp-price { font-size:21px; }
+  .portal .cp-cardbody .cp-btn { min-height:46px; font-size:12px; }
+  .portal .cp-card-hint { font-size:10px; line-height:1.7; }
+  .portal .cp-panel { padding:15px; border-radius:14px; }
+  .portal .cp-field { margin:10px 0; font-size:11px; }
+  .portal .cp-input { min-height:46px; font-size:16px; }
+  .portal .cp-auth-actions { grid-template-columns:1fr 1fr; gap:8px; }
+  .portal .cp-auth-actions .cp-btn { min-height:45px; padding:9px 6px; font-size:11px; }
+  .portal .cp-text-link { min-height:38px; align-items:center; }
+  .portal .cp-footer { padding:22px 0 6px; font-size:10px; }
+}
+@media (max-width: 380px) {
+  .portal .cp-shell { padding-inline:9px; }
+  .portal .cp-brand-sub { letter-spacing:.7px; font-size:6px; }
+  .portal .cp-actions .cp-btn { padding-inline:7px; }
+  .portal .cp-hero-premium { padding:22px 15px 16px; }
+  .portal .cp-hero-actions { grid-template-columns:1fr; }
+  .portal .cp-quick-stats article { padding:8px 7px; }
+  .portal .cp-quick-stats small { font-size:8px; }
+  .portal .cp-filterbox { padding-inline:6px; }
+  .portal .cp-filterbox select { font-size:9px; }
+  .portal .cp-nav button { font-size:9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portal * { scroll-behavior:auto !important; }
+}
