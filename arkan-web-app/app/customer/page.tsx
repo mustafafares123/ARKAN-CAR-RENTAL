@@ -6,7 +6,7 @@ import {
   CarFront, UserRound, CalendarDays, LogOut, Languages, ShieldCheck,
   LockKeyhole, Menu, X, Fuel, Settings2, Users, ArrowUpRight, CheckCircle2,
   Clock3, KeyRound, Sparkles, RefreshCw, Search, ArrowDownWideNarrow,
-  Heart, SlidersHorizontal, Eye, EyeOff, BadgeCheck, Headphones, CalendarCheck2
+  Heart, SlidersHorizontal, Eye, EyeOff
 } from "lucide-react";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://blknmrmibgklnfqycxnq.supabase.co";
