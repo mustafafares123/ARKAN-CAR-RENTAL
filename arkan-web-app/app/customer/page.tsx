@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   CarFront, UserRound, CalendarDays, LogOut, Languages, ShieldCheck,
@@ -132,7 +132,7 @@ export default function CustomerPortal() {
     setCustomerPhone(session.user.user_metadata?.phone || "");
   }
 
-  async function submitVehicleRequest(event: React.FormEvent<HTMLFormElement>) {
+  async function submitVehicleRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!sb || !session || !selectedCar) return;
     setRequestBusy(true);
