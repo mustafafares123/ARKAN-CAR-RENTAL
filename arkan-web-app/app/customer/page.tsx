@@ -36,6 +36,8 @@ export default function CustomerPortal() {
   const [fuelFilter, setFuelFilter] = useState("all");
   const [transmissionFilter, setTransmissionFilter] = useState("all");
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoritesReady, setFavoritesReady] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const ar = lang === "ar";
 
@@ -52,6 +54,20 @@ export default function CustomerPortal() {
     void loadCatalog(client);
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("arkan-customer-favorites");
+      if (saved) setFavorites(JSON.parse(saved).filter((value: unknown) => typeof value === "string"));
+    } catch { /* Ignore unavailable or malformed local preferences. */ }
+    setFavoritesReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!favoritesReady) return;
+    try { window.localStorage.setItem("arkan-customer-favorites", JSON.stringify(favorites)); }
+    catch { /* Favorites remain available for this session if storage is blocked. */ }
+  }, [favorites, favoritesReady]);
 
   useEffect(() => {
     if (session && sb) {
@@ -83,6 +99,18 @@ export default function CustomerPortal() {
     setBusy(false);
   }
 
+  async function resetPassword() {
+    if (!sb || !email.trim()) {
+      setNotice(label("أدخل بريدك الإلكتروني أولاً لإرسال رابط استعادة كلمة المرور.","Enter your email first so we can send a password reset link."));
+      return;
+    }
+    setBusy(true);
+    setNotice("");
+    const { error } = await sb.auth.resetPasswordForEmail(email.trim());
+    setNotice(error ? error.message : label("إذا كان البريد مسجلاً، فسيصلك رابط استعادة كلمة المرور. افحص صندوق الوارد والرسائل غير المرغوب فيها.","If this email is registered, a password reset link will arrive shortly. Check your inbox and spam folder."));
+    setBusy(false);
+  }
+
   async function refreshCars() {
     if (sb) {
       setNotice("");
@@ -104,12 +132,13 @@ export default function CustomerPortal() {
       .filter(Boolean).join(" ").toLocaleLowerCase().includes(carSearch.trim().toLocaleLowerCase()))
     .filter((car) => fuelFilter === "all" || car.fuel_type === fuelFilter)
     .filter((car) => transmissionFilter === "all" || car.transmission === transmissionFilter)
+    .filter((car) => !favoritesOnly || favorites.includes(car.id))
     .sort((a, b) => sortOrder === "price-low" ? Number(a.daily_rate) - Number(b.daily_rate)
       : sortOrder === "price-high" ? Number(b.daily_rate) - Number(a.daily_rate) : 0);
 
   const fuelOptions = Array.from(new Set(cars.map((car) => car.fuel_type).filter(Boolean))) as string[];
   const transmissionOptions = Array.from(new Set(cars.map((car) => car.transmission).filter(Boolean))) as string[];
-  const resetFilters = () => { setCarSearch(""); setFuelFilter("all"); setTransmissionFilter("all"); setSortOrder("recommended"); };
+  const resetFilters = () => { setCarSearch(""); setFuelFilter("all"); setTransmissionFilter("all"); setSortOrder("recommended"); setFavoritesOnly(false); };
   const toggleFavorite = (carId: string) => setFavorites((current) => current.includes(carId)
     ? current.filter((id) => id !== carId) : [...current, carId]);
 
@@ -250,13 +279,14 @@ export default function CustomerPortal() {
                     {transmissionOptions.map((transmission) => <option key={transmission} value={transmission}>{transmission}</option>)}
                   </select>
                 </label>
+                <button type="button" className={favoritesOnly ? "cp-favorites-filter active" : "cp-favorites-filter"} onClick={() => setFavoritesOnly((value) => !value)} aria-pressed={favoritesOnly}><Heart size={14} fill={favoritesOnly ? "currentColor" : "none"}/>{label("المفضلة","Favorites")} ({favorites.length})</button>
                 <span className="cp-results-count">{label("عرض","Showing")} <b>{visibleCars.length}</b> {label("من","of")} <b>{cars.length}</b></span>
-                {(carSearch || fuelFilter !== "all" || transmissionFilter !== "all" || sortOrder !== "recommended") &&
+                {(carSearch || fuelFilter !== "all" || transmissionFilter !== "all" || sortOrder !== "recommended" || favoritesOnly) &&
                   <button className="cp-clear-filters" onClick={resetFilters}>{label("مسح الفلاتر","Clear filters")}</button>}
               </div>
               {catalogBusy ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><RefreshCw size={24}/></div><b>{label("جارٍ تحميل السيارات","Loading vehicles")}</b><p className="cp-muted">{label("لحظات ونجهز لك الأسطول المتاح.","Getting the available fleet ready.")}</p></div>
               : cars.length === 0 ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><CarFront size={27}/></div><b>{label("لا توجد سيارات متاحة للعرض حالياً","No vehicles available right now")}</b><p className="cp-muted">{label("يرجى المحاولة لاحقاً أو التواصل مع فريق أركان.","Please check again later or contact the ARKAN team.")}</p></div>
-              : visibleCars.length === 0 ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><Search size={25}/></div><b>{label("لم نعثر على سيارة بهذه المواصفات","No vehicles match your search")}</b><p className="cp-muted">{label("جرّب كلمة بحث أخرى أو امسح البحث لعرض جميع السيارات.","Try another search or clear it to see the full fleet.")}</p><button className="cp-btn cp-soft" onClick={() => setCarSearch("")}>{label("مسح البحث","Clear search")}</button></div>
+              : visibleCars.length === 0 ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><Search size={25}/></div><b>{favoritesOnly && favorites.length === 0 ? label("لم تضف سيارات إلى المفضلة بعد","No saved favorites yet") : label("لم نعثر على سيارة بهذه المواصفات","No vehicles match your search")}</b><p className="cp-muted">{favoritesOnly && favorites.length === 0 ? label("اضغط على رمز القلب في بطاقة أي سيارة لإضافتها إلى قائمتك.","Tap the heart on any vehicle card to save it here.") : label("جرّب تعديل البحث أو الفلاتر لعرض المزيد من السيارات.","Adjust your search or filters to see more vehicles.")}</p><button className="cp-btn cp-soft" onClick={resetFilters}>{label("عرض جميع السيارات","Show all vehicles")}</button></div>
               : <div className="cp-grid">{visibleCars.map(car => <article className="cp-card" key={car.id}>
                   <div className="cp-photo">
                     <button type="button" className={favorites.includes(car.id) ? "cp-favorite active" : "cp-favorite"} onClick={() => toggleFavorite(car.id)} aria-label={favorites.includes(car.id) ? label("إزالة من المفضلة","Remove from favorites") : label("إضافة إلى المفضلة","Add to favorites")} aria-pressed={favorites.includes(car.id)}><Heart size={17} fill={favorites.includes(car.id) ? "currentColor" : "none"}/></button>
@@ -301,6 +331,7 @@ export default function CustomerPortal() {
                 <button className="cp-btn cp-gold" disabled={busy || !email || password.length < 6} onClick={() => auth("in")}>{label("تسجيل الدخول","Sign in")}</button>
                 <button className="cp-btn cp-soft" disabled={busy || !email || password.length < 6} onClick={() => auth("up")}>{label("إنشاء حساب","Create account")}</button>
               </div>
+              <button type="button" className="cp-text-link" onClick={resetPassword} disabled={busy || !email.trim()}>{label("نسيت كلمة المرور؟","Forgot password?")}</button>
               <p className="cp-muted" style={{marginBottom:0}}>{label("كلمة المرور يجب أن تكون 6 أحرف على الأقل.","Password must contain at least 6 characters.")}</p>
             </div> : <div className="cp-panel">
               <div className="cp-panel-title"><h3>{label("حسابك في أركان","Your ARKAN account")}</h3><UserRound color="#b18b42"/></div>
