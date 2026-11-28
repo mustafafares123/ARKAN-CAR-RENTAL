@@ -30,6 +30,8 @@ export default function CustomerPortal() {
   const [notice, setNotice] = useState("");
   const [lang, setLang] = useState<"ar" | "en">("ar");
   const [tab, setTab] = useState<"cars" | "bookings" | "profile">("cars");
+  const [carSearch, setCarSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<"recommended" | "price-low" | "price-high">("recommended");
   const ar = lang === "ar";
 
   useEffect(() => {
@@ -92,6 +94,11 @@ export default function CustomerPortal() {
   const label = (arabic: string, english: string) => ar ? arabic : english;
   const linked = status === "approved";
   const pending = status === "pending";
+  const visibleCars = cars
+    .filter((car) => [car.make, car.model, car.year, car.color, car.transmission, car.fuel_type]
+      .filter(Boolean).join(" ").toLocaleLowerCase().includes(carSearch.trim().toLocaleLowerCase()))
+    .sort((a, b) => sortOrder === "price-low" ? Number(a.daily_rate) - Number(b.daily_rate)
+      : sortOrder === "price-high" ? Number(b.daily_rate) - Number(a.daily_rate) : 0);
 
   return (
     <main dir={ar ? "rtl" : "ltr"} className="portal">
@@ -192,9 +199,26 @@ export default function CustomerPortal() {
                 <div><h2>{label("السيارات المتاحة","Available vehicles")}</h2><div className="cp-muted">{label("اختر ما يناسب رحلتك من أسطولنا.","Find the right vehicle for your next trip.")}</div></div>
                 <button className="cp-btn cp-soft" onClick={refreshCars} disabled={catalogBusy}><RefreshCw size={14}/>{label("تحديث","Refresh")}</button>
               </div>
+              <div className="cp-fleet-tools">
+                <label className="cp-searchbox">
+                  <Search size={17} aria-hidden="true"/>
+                  <input value={carSearch} onChange={(event) => setCarSearch(event.target.value)} placeholder={label("ابحث عن الماركة أو الموديل أو المواصفات...","Search make, model or features...")} aria-label={label("ابحث في السيارات","Search vehicles")}/>
+                  {carSearch && <button type="button" onClick={() => setCarSearch("")} aria-label={label("مسح البحث","Clear search")}><X size={15}/></button>}
+                </label>
+                <label className="cp-sortbox">
+                  <ArrowDownWideNarrow size={16} aria-hidden="true"/>
+                  <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)} aria-label={label("ترتيب السيارات","Sort vehicles")}>
+                    <option value="recommended">{label("الترتيب الافتراضي","Recommended")}</option>
+                    <option value="price-low">{label("السعر: من الأقل","Price: low to high")}</option>
+                    <option value="price-high">{label("السعر: من الأعلى","Price: high to low")}</option>
+                  </select>
+                </label>
+                <span className="cp-results-count">{label("عرض","Showing")} <b>{visibleCars.length}</b> {label("من","of")} <b>{cars.length}</b></span>
+              </div>
               {catalogBusy ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><RefreshCw size={24}/></div><b>{label("جارٍ تحميل السيارات","Loading vehicles")}</b><p className="cp-muted">{label("لحظات ونجهز لك الأسطول المتاح.","Getting the available fleet ready.")}</p></div>
               : cars.length === 0 ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><CarFront size={27}/></div><b>{label("لا توجد سيارات متاحة للعرض حالياً","No vehicles available right now")}</b><p className="cp-muted">{label("يرجى المحاولة لاحقاً أو التواصل مع فريق أركان.","Please check again later or contact the ARKAN team.")}</p></div>
-              : <div className="cp-grid">{cars.map(car => <article className="cp-card" key={car.id}>
+              : visibleCars.length === 0 ? <div className="cp-panel cp-empty"><div className="cp-empty-icon"><Search size={25}/></div><b>{label("لم نعثر على سيارة بهذه المواصفات","No vehicles match your search")}</b><p className="cp-muted">{label("جرّب كلمة بحث أخرى أو امسح البحث لعرض جميع السيارات.","Try another search or clear it to see the full fleet.")}</p><button className="cp-btn cp-soft" onClick={() => setCarSearch("")}>{label("مسح البحث","Clear search")}</button></div>
+              : <div className="cp-grid">{visibleCars.map(car => <article className="cp-card" key={car.id}>
                   <div className="cp-photo">
                     {car.image_url ? <img src={car.image_url} alt={`${car.make || ""} ${car.model || ""}`} loading="lazy"/> : <CarFront size={55} strokeWidth={1.2}/>}
                     <span className="cp-photo-label">{label("متاحة الآن","Available")}</span>
