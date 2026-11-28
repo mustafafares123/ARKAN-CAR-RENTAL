@@ -52,3 +52,27 @@
 .portal .cp-results-count b{color:#253a56;font:800 13px Inter}
 @media(max-width:720px){.portal .cp-fleet-tools{grid-template-columns:1fr 1fr}.portal .cp-searchbox{grid-column:1/-1}.portal .cp-results-count{grid-column:1/-1;text-align:start}}
 @media(max-width:420px){.portal .cp-fleet-tools{grid-template-columns:1fr}.portal .cp-searchbox{grid-column:auto}.portal .cp-results-count{grid-column:auto}}
+
+
+/* Customer-first experience refinements */
+.portal .cp-hero{gap:24px}
+.portal .cp-hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.portal .cp-hero-actions a{text-decoration:none;min-height:43px}
+.portal .cp-hero-link{background:#ffffff12;border:1px solid #ffffff38;color:#fff}
+.portal .cp-fleet-tools{grid-template-columns:minmax(220px,1fr) minmax(175px,210px) minmax(145px,175px) minmax(145px,175px) auto;}
+.portal .cp-filterbox{min-height:44px;display:flex;align-items:center;gap:8px;padding:0 11px;border:1px solid #e1e6ed;border-radius:10px;background:#fff;color:#8995a4;min-width:0}
+.portal .cp-filterbox select{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#536176;font:500 11px 'IBM Plex Sans Arabic',Inter,sans-serif;cursor:pointer}
+.portal .cp-filterbox:focus-within{border-color:#c9a45c;box-shadow:0 0 0 3px #c9a45c20}
+.portal .cp-clear-filters{border:0;background:transparent;color:#9a783f;font:700 11px 'IBM Plex Sans Arabic',sans-serif;cursor:pointer;white-space:nowrap}
+.portal .cp-photo{isolation:isolate}
+.portal .cp-favorite{position:absolute;z-index:2;top:12px;inset-inline-end:12px;width:36px;height:36px;border:1px solid #fff;background:#ffffffed;color:#657286;border-radius:50%;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 12px #14253d20;transition:transform .18s,color .18s}
+.portal .cp-favorite:hover{transform:scale(1.06)}
+.portal .cp-favorite.active{color:#b64b55;border-color:#f1d7da;background:#fff7f7}
+.portal .cp-card-hint{margin-top:8px;text-align:center;font-size:10px}
+.portal .cp-password-wrap{position:relative;display:block}
+.portal .cp-password-wrap .cp-input{padding-inline-end:44px}
+.portal .cp-password-toggle{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-35%);border:0;background:transparent;color:#8995a4;display:grid;place-items:center;cursor:pointer}
+.portal .cp-password-wrap:focus-within .cp-password-toggle{color:#9a783f}
+@media(max-width:1120px){.portal .cp-fleet-tools{grid-template-columns:minmax(200px,1fr) minmax(170px,200px) minmax(135px,1fr) minmax(135px,1fr)}.portal .cp-results-count{grid-column:1/-1;text-align:start}}
+@media(max-width:720px){.portal .cp-fleet-tools{grid-template-columns:1fr 1fr}.portal .cp-searchbox{grid-column:1/-1}.portal .cp-sortbox{grid-column:1/-1}.portal .cp-results-count{grid-column:1/-1}.portal .cp-clear-filters{justify-self:start}}
+@media(max-width:420px){.portal .cp-fleet-tools{grid-template-columns:1fr}.portal .cp-searchbox,.portal .cp-sortbox{grid-column:auto}.portal .cp-results-count{grid-column:auto}.portal .cp-hero-actions{display:grid;grid-template-columns:1fr}.portal .cp-hero-actions a{width:100%}}
