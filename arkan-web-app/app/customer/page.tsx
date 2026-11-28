@@ -15,7 +15,8 @@ const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_kRGYnQJ
 type Car = {
   id: string; make: string | null; model: string | null; year: number | null;
   plate: string | null; daily_rate: number; currency: string; status: string;
-  image_url: string; color: string | null; transmission: string | null;
+  image_url: string; image_path: string | null; gallery_paths: string[]; gallery_urls: string[];
+  company_id: string; color: string | null; transmission: string | null;
   fuel_type: string | null; seats: number | null;
 };
 
@@ -39,6 +40,15 @@ export default function CustomerPortal() {
   const [favoritesReady, setFavoritesReady] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedCar, setSelectedCar] = useState<Car | null>(null);
+  const [requestType, setRequestType] = useState<"booking" | "inquiry">("booking");
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [requestMessage, setRequestMessage] = useState("");
+  const [requestBusy, setRequestBusy] = useState(false);
+  const [myRequests, setMyRequests] = useState<any[]>([]);
   const ar = lang === "ar";
 
   useEffect(() => {
@@ -74,15 +84,78 @@ export default function CustomerPortal() {
       sb.rpc("customer_portal_my_status").then(({ data, error }) => {
         if (!error && data) setStatus(data);
       });
+      void loadMyRequests(sb);
+    } else {
+      setMyRequests([]);
     }
   }, [session, sb]);
 
   async function loadCatalog(client: SupabaseClient) {
     setCatalogBusy(true);
     const { data, error } = await client.rpc("customer_portal_catalog");
-    if (error) setNotice("تعذر تحميل السيارات حالياً. حاول تحديث القائمة بعد قليل.");
-    else setCars((data || []) as Car[]);
+    if (error) {
+      setNotice("تعذر تحميل السيارات حالياً. حاول تحديث القائمة بعد قليل.");
+    } else {
+      const catalog = await Promise.all(((data || []) as Car[]).map(async (car) => {
+        const paths = Array.from(new Set([...(car.gallery_paths || []), car.image_path].filter((path): path is string => Boolean(path))));
+        const signed = await Promise.all(paths.map(async (path) => {
+          const { data: file, error: imageError } = await client.storage.from("arkan-private").createSignedUrl(path, 3600);
+          return imageError ? null : file?.signedUrl || null;
+        }));
+        const gallery_urls = signed.filter((url): url is string => Boolean(url));
+        return { ...car, gallery_urls, image_url: gallery_urls[0] || car.image_url || "" };
+      }));
+      setCars(catalog);
+    }
     setCatalogBusy(false);
+  }
+
+  async function loadMyRequests(client: SupabaseClient) {
+    const { data, error } = await client.from("customer_portal_requests")
+      .select("id,car_id,request_type,status,start_date,end_date,message,created_at,customer_name")
+      .order("created_at", { ascending: false });
+    if (!error) setMyRequests(data || []);
+  }
+
+  function openVehicleRequest(car: Car, type: "booking" | "inquiry") {
+    if (!session) {
+      setNotice(label("سجّل الدخول أولاً لإرسال طلب حجز أو استفسار. يمكنك تصفح السيارات دون تسجيل الدخول.", "Sign in first to send a booking request or enquiry. You can browse the fleet without signing in."));
+      return;
+    }
+    setNotice("");
+    setSelectedCar(car);
+    setRequestType(type);
+    setStartDate("");
+    setEndDate("");
+    setRequestMessage("");
+    setCustomerName(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "");
+    setCustomerPhone(session.user.user_metadata?.phone || "");
+  }
+
+  async function submitVehicleRequest(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!sb || !session || !selectedCar) return;
+    setRequestBusy(true);
+    const { error } = await sb.from("customer_portal_requests").insert({
+      company_id: selectedCar.company_id,
+      car_id: selectedCar.id,
+      user_id: session.user.id,
+      request_type: requestType,
+      customer_name: customerName.trim(),
+      phone: customerPhone.trim(),
+      start_date: requestType === "booking" ? startDate : null,
+      end_date: requestType === "booking" ? endDate : null,
+      message: requestMessage.trim()
+    });
+    if (error) {
+      setNotice(label("تعذر إرسال الطلب. تأكد من البيانات وحاول مرة أخرى.", "We could not send your request. Check the details and try again."));
+    } else {
+      setSelectedCar(null);
+      setNotice(label("تم إرسال طلبك إلى فريق أركان بنجاح. هذا طلب مبدئي وليس حجزاً مؤكداً، وسيتواصل معك الفريق بعد المراجعة.", "Your request was sent to ARKAN. This is a request, not a confirmed booking; our team will contact you after review."));
+      await loadMyRequests(sb);
+      setTab("bookings");
+    }
+    setRequestBusy(false);
   }
 
   async function auth(mode: "in" | "up") {
@@ -293,6 +366,7 @@ export default function CustomerPortal() {
                     {car.image_url ? <img src={car.image_url} alt={`${car.make || ""} ${car.model || ""}`} loading="lazy"/> : <CarFront size={55} strokeWidth={1.2}/>}
                     <span className="cp-photo-label">{label("متاحة الآن","Available")}</span>
                   </div>
+                  {car.gallery_urls.length > 1 && <div className="cp-photo-thumbs">{car.gallery_urls.slice(1, 5).map((url, index) => <img key={url} src={url} alt={label(`صورة إضافية ${index + 1}`, `Additional view ${index + 1}`)} loading="lazy" />)}</div>}
                   <div className="cp-cardbody">
                     <div className="cp-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
                       <b className="cp-car-title">{car.make || label("سيارة","Vehicle")} {car.model || ""}</b><span className="cp-year">{car.year || "—"}</span>
@@ -308,16 +382,20 @@ export default function CustomerPortal() {
                       <div className="cp-price">{Number(car.daily_rate || 0).toLocaleString("en-US")} ₪ <small>{label(" / يوم"," / day")}</small></div>
                       <span className="cp-muted">{label("السعر اليومي","Daily rate")}</span>
                     </div>
-                    <button className="cp-btn cp-dark" style={{width:"100%",marginTop:15}} disabled={!session || !linked} onClick={() => setNotice(label("ملفك معتمد. يرجى التواصل مع فريق أركان لإتمام طلب هذه السيارة.","Your profile is approved. Please contact ARKAN to complete a request for this vehicle."))}>
-                      {label("استفسر عن هذه السيارة","Enquire about this car")}<ArrowUpRight size={15}/>
-                    </button>
-                    {!session && <div className="cp-muted cp-card-hint">{label("سجّل الدخول، ثم أكمل اعتماد ملفك لطلب السيارة.","Sign in and complete profile verification to request this vehicle.")}</div>}
-                    {session && !linked && <div className="cp-muted cp-card-hint">{label("يُتاح طلب السيارة بعد ربط الحساب واعتماد الهوية والرخصة.","Vehicle requests unlock after your account, ID and licence are verified.")}</div>}
+                    <div className="cp-request-actions">
+                      <button className="cp-btn cp-gold" type="button" onClick={() => openVehicleRequest(car, "booking")}>{label("اطلب حجزاً","Request booking")}<CalendarDays size={15}/></button>
+                      <button className="cp-btn cp-dark" type="button" onClick={() => openVehicleRequest(car, "inquiry")}>{label("استفسار","Enquire")}<ArrowUpRight size={15}/></button>
+                    </div>
+                    {!session && <div className="cp-muted cp-card-hint">{label("سجّل الدخول لإرسال طلب حجز أو استفسار. تصفح السيارات متاح للجميع.","Sign in to send a booking request or enquiry. Browsing is open to everyone.")}</div>}
+                    {session && !linked && <div className="cp-muted cp-card-hint">{label("يمكنك إرسال طلب الآن؛ تثبيت الحجز النهائي يتطلب ربط الحساب واعتماد الهوية والرخصة.","You can send a request now; final booking confirmation requires account linking and verified ID and licence.")}</div>}
                   </div>
                 </article>)}</div>}
             </>}
 
-            {tab === "bookings" && <div className="cp-panel"><div className="cp-panel-title"><h2>{label("حجوزاتي وطلباتي","My bookings & requests")}</h2><CalendarDays color="#b18b42"/></div><p className="cp-muted">{label("ستظهر حجوزاتك هنا بعد ربط حسابك بملف العميل. لا يمكن تثبيت أي حجز قبل اعتماد الإدارة.","Your bookings will appear here once your account is linked to your customer record. No booking can be confirmed before company approval.")}</p></div>}
+            {tab === "bookings" && <div className="cp-panel"><div className="cp-panel-title"><h2>{label("حجوزاتي وطلباتي","My bookings & requests")}</h2><CalendarDays color="#b18b42"/></div>
+              {!session ? <p className="cp-muted">{label("سجّل الدخول لمتابعة طلباتك.", "Sign in to follow your requests.")}</p> : myRequests.length === 0 ? <p className="cp-muted">{label("لا توجد طلبات حتى الآن. اختر سيارة وأرسل طلب حجز أو استفسار.", "No requests yet. Choose a vehicle and send a booking request or enquiry.")}</p> : <div className="cp-request-list">{myRequests.map((request) => { const car = cars.find((item) => item.id === request.car_id); return <article className="cp-request-item" key={request.id}><div><b>{car ? `${car.make || ""} ${car.model || ""}` : label("طلب سيارة","Vehicle request")}</b><small>{request.request_type === "booking" ? label("طلب حجز","Booking request") : label("استفسار","Enquiry")} · {new Date(request.created_at).toLocaleDateString(ar ? "ar" : "en")}</small>{request.start_date && <small>{request.start_date} – {request.end_date}</small>}</div><span className={`cp-request-status ${request.status}`}>{request.status === "pending" ? label("قيد المراجعة","Pending") : request.status}</span></article>; })}</div>}
+              <p className="cp-muted" style={{marginTop:14}}>{label("طلبات الحجز لا تتحول إلى حجوزات مؤكدة إلا بعد مراجعة فريق أركان واعتماد ملف العميل.", "Booking requests become confirmed reservations only after ARKAN reviews them and approves your customer profile.")}</p>
+            </div>}
 
             {tab === "profile" && <div className="cp-panel"><div className="cp-panel-title"><h2>{label("حالة ملف العميل","Customer profile status")}</h2><UserRound color="#b18b42"/></div><div className={`cp-status ${linked ? "ok" : pending ? "wait" : "off"}`}>{linked ? <CheckCircle2 size={16}/> : pending ? <Clock3 size={16}/> : <LockKeyhole size={16}/>} {linked ? label("تم اعتماد الملف","Profile approved") : pending ? label("الملف قيد مراجعة الإدارة","Under admin review") : label("الحساب غير مربوط بملف عميل","Account not linked")}</div><div className="cp-lock"><strong><ShieldCheck size={17}/>{label("حماية بياناتك","Your data is protected")}</strong><p className="cp-muted">{label("لضمان الخصوصية، تقوم إدارة أركان بربط الحساب بسجل العميل الصحيح ومراجعة بيانات الهوية ورخصة القيادة قبل تفعيل الحجز.","For your privacy, ARKAN staff link your account to the correct customer record and verify identity and driving-licence details before enabling bookings.")}</p></div></div>}
           </section>
@@ -347,6 +425,20 @@ export default function CustomerPortal() {
             </div>
           </aside>
         </div>
+        {selectedCar && <div className="cp-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedCar(null); }}>
+          <section className="cp-modal" role="dialog" aria-modal="true" aria-labelledby="cp-request-title" dir={ar ? "rtl" : "ltr"}>
+            <div className="cp-panel-title"><div><h2 id="cp-request-title">{requestType === "booking" ? label("طلب حجز سيارة","Request a vehicle booking") : label("استفسار عن السيارة","Vehicle enquiry")}</h2><div className="cp-muted">{selectedCar.make} {selectedCar.model} · {Number(selectedCar.daily_rate || 0).toLocaleString("en-US")} ₪ {label("لليوم","per day")}</div></div><button type="button" className="cp-modal-close" onClick={() => setSelectedCar(null)} aria-label={label("إغلاق","Close")}><X size={19}/></button></div>
+            <form onSubmit={submitVehicleRequest}>
+              <div className="cp-request-type"><button type="button" className={requestType === "booking" ? "active" : ""} onClick={() => setRequestType("booking")}>{label("طلب حجز","Booking request")}</button><button type="button" className={requestType === "inquiry" ? "active" : ""} onClick={() => setRequestType("inquiry")}>{label("استفسار","Enquiry")}</button></div>
+              <label className="cp-field">{label("الاسم الكامل","Full name")}<input className="cp-input" required minLength={2} maxLength={120} value={customerName} onChange={(event) => setCustomerName(event.target.value)} /></label>
+              <label className="cp-field">{label("رقم الهاتف","Phone number")}<input className="cp-input" required minLength={5} maxLength={40} type="tel" value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} /></label>
+              {requestType === "booking" && <div className="cp-date-grid"><label className="cp-field">{label("تاريخ الاستلام","Pickup date")}<input className="cp-input" type="date" required min={new Date().toISOString().slice(0,10)} value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label><label className="cp-field">{label("تاريخ الإرجاع","Return date")}<input className="cp-input" type="date" required min={startDate || new Date().toISOString().slice(0,10)} value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label></div>}
+              <label className="cp-field">{label("رسالتك أو تفاصيل إضافية","Message or details")}<textarea className="cp-input cp-textarea" maxLength={2000} rows={4} value={requestMessage} onChange={(event) => setRequestMessage(event.target.value)} placeholder={label("اكتب سؤالك أو أي تفاصيل تساعدنا...","Write your question or any helpful details...")} /></label>
+              <div className="cp-request-notice"><ShieldCheck size={17}/><span>{label("هذا طلب مبدئي فقط. لا يتم تأكيد الحجز قبل مراجعة الإدارة وربط حسابك بملف العميل واعتماد الهوية والرخصة.", "This is a preliminary request only. Booking is not confirmed until management reviews it and your customer profile, ID and licence are verified.")}</span></div>
+              <div className="cp-request-actions"><button className="cp-btn cp-gold" type="submit" disabled={requestBusy || !customerName.trim() || !customerPhone.trim() || (requestType === "booking" && (!startDate || !endDate || endDate <= startDate))}>{requestBusy ? label("جارٍ الإرسال...","Sending...") : label("إرسال الطلب","Send request")}</button><button className="cp-btn cp-soft" type="button" onClick={() => setSelectedCar(null)}>{label("إلغاء","Cancel")}</button></div>
+            </form>
+          </section>
+        </div>}
         <footer className="cp-footer">© {new Date().getFullYear()} ARKAN CO. · RENT A CAR</footer>
       </div>
     </main>
