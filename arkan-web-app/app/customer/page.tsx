@@ -188,17 +188,23 @@ export default function CustomerPortal() {
           </div>
         </header>
 
-        <section className="cp-hero">
-          <div>
+        <section className="cp-hero cp-hero-premium">
+          {cars[0]?.image_url && <div className="cp-hero-vehicle"><img src={cars[0].image_url} alt="" aria-hidden="true"/></div>}
+          <div className="cp-hero-copy">
             <div className="cp-kicker"><Sparkles size={14}/>{label("تجربة أركان للعملاء","THE ARKAN CUSTOMER EXPERIENCE")}</div>
-            <h1>{label("رحلتك تبدأ من هنا.","Your journey starts here.")}</h1>
-            <p>{label("اكتشف أسطول سيارات أركان، قارن المواصفات والأسعار، وتابع ملفك وطلباتك من مساحة واحدة سهلة وآمنة.", "Explore the ARKAN fleet, compare vehicle details and daily rates, and manage your profile and requests in one simple, secure space.")}</p>
+            <h1>{label("مرحباً بك في أركان","Welcome to ARKAN")}<br/>{label("رحلتك تبدأ من هنا.","Your journey starts here.")}</h1>
+            <p>{label("اكتشف أسطول سياراتنا، قارن المواصفات والأسعار، وتابع طلباتك من مساحة واحدة مصممة لراحتك.", "Explore our fleet, compare vehicle details and daily rates, and manage your requests in one place.")}</p>
             <div className="cp-hero-actions">
-              <a className="cp-btn cp-gold" href="#cp-fleet"><CarFront size={16}/>{label("استكشف السيارات","Explore vehicles")}</a>
-              <a className="cp-btn cp-hero-link" href="#cp-account"><UserRound size={16}/>{label("حساب العميل","Customer account")}</a>
+              <a className="cp-btn cp-gold" href="#cp-fleet"><CarFront size={16}/>{label("استكشف سياراتنا","Explore our fleet")}</a>
+              <a className="cp-btn cp-hero-link" href="#cp-account"><UserRound size={16}/>{label("حسابي","My account")}</a>
             </div>
           </div>
-          <div className="cp-hero-art"><ShieldCheck size={19}/>{label("حجز آمن وموثوق","Secure customer portal")}</div>
+          <div className="cp-hero-art"><ShieldCheck size={19}/>{label("خدمة موثوقة وآمنة","Trusted & secure service")}</div>
+        </section>
+        <section className="cp-quick-stats" aria-label={label("ملخص البوابة","Portal overview")}>
+          <article><span className="cp-stat-icon"><CarFront size={19}/></span><div><b>{cars.length}</b><small>{label("سيارة في الأسطول","Fleet vehicles")}</small></div></article>
+          <article><span className="cp-stat-icon"><Heart size={19}/></span><div><b>{favorites.length}</b><small>{label("سيارات مفضلة","Saved favorites")}</small></div></article>
+          <article><span className="cp-stat-icon"><ShieldCheck size={19}/></span><div><b>{linked ? label("معتمد","Approved") : pending ? label("قيد المراجعة","In review") : label("بحاجة للربط","Needs linking")}</b><small>{label("حالة ملف العميل","Customer profile")}</small></div></article>
         </section>
 
         {notice && <div className="cp-notice"><LockKeyhole size={17}/><span>{notice}</span></div>}
